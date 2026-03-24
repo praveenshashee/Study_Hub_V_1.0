@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import pool from "./db.js";
 
 const app = express();
 const PORT = 5001;
@@ -46,59 +47,207 @@ const videos = [
   }
 ];
 
-// get all videos
-app.get("/api/videos", (req, res) => {
-  res.status(200).json(videos);
-});
+// Get all videos from PostgreSQL and map column names for frontend compatibility
+app.get("/api/videos", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM videos ORDER BY id ASC");
 
-// get one video by id
-app.get("/api/videos/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const video = videos.find((v) => v.id === id);
+    const videos = result.rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      description: row.description,
+      videoUrl: row.video_url,
+      thumbnailUrl: row.thumbnail_url,
+      uploader: row.uploader_name,
+      views: row.view_count,
+      rating: Number(row.rating),
+      createdAt: row.created_at
+    }));
 
-  if (!video) {
-    return res.status(404).json({ message: "Video not found" });
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Database error while fetching videos:", error);
+    res.status(500).json({ message: "Failed to fetch videos from database" });
   }
-
-  res.status(200).json(video);
 });
 
-// Increase the view count of a selected video
-app.patch("/api/videos/:id/view", (req, res) => {
-  const id = Number(req.params.id);
 
-  // Find the selected video by id
-  const video = videos.find((v) => v.id === id);
 
-  // If video is not found, return an error
-  if (!video) {
-    return res.status(404).json({ message: "Video not found" });
+// Get one video by id from PostgreSQL and map column names for frontend compatibility
+app.get("/api/videos/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const result = await pool.query("SELECT * FROM videos WHERE id = $1", [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    const row = result.rows[0];
+
+    const video = {
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      description: row.description,
+      videoUrl: row.video_url,
+      thumbnailUrl: row.thumbnail_url,
+      uploader: row.uploader_name,
+      views: row.view_count,
+      rating: Number(row.rating),
+      createdAt: row.created_at,
+      materials: {
+        slides: row.slides_url,
+        labSheet: row.labsheet_url,
+        modelPaper: row.modelpaper_url
+          }
+    };
+
+    res.status(200).json(video);
+  } catch (error) {
+    console.error("Database error while fetching one video:", error);
+    res.status(500).json({ message: "Failed to fetch video from database" });
   }
-
-  // Increase views by 1
-  video.views += 1;
-
-  // Send back the updated video object
-  res.status(200).json(video);
 });
 
-// upload a video
-app.post("/api/videos", (req, res) => {
-  const newVideo = req.body;
 
-  if (!newVideo.title || !newVideo.subject || !newVideo.description) {
-    return res.status(400).json({ message: "Missing required fields" });
+
+// Increase view count and return frontend-friendly field names
+app.patch("/api/videos/:id/view", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const result = await pool.query(
+      "UPDATE videos SET view_count = view_count + 1 WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    const row = result.rows[0];
+
+    const video = {
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      description: row.description,
+      videoUrl: row.video_url,
+      thumbnailUrl: row.thumbnail_url,
+      uploader: row.uploader_name,
+      views: row.view_count,
+      rating: Number(row.rating),
+      createdAt: row.created_at,
+      materials: {
+        slides: row.slides_url,
+        labSheet: row.labsheet_url,
+        modelPaper: row.modelpaper_url
+          }
+    };
+
+    res.status(200).json(video);
+  } catch (error) {
+    console.error("Database error while updating view count:", error);
+    res.status(500).json({ message: "Failed to update view count" });
   }
-
-  newVideo.id = videos.length + 1;
-  newVideo.views = 0;
-  videos.push(newVideo);
-
-  res.status(201).json({
-    message: "Video uploaded successfully",
-    video: newVideo
-  });
 });
+
+
+
+// Add a new video to PostgreSQL
+app.post("/api/videos", async (req, res) => {
+  try {
+    // Get data sent from the frontend
+    const {
+      title,
+      subject,
+      description,
+      videoUrl,
+      slidesUrl,
+      labSheetUrl,
+      modelPaperUrl,
+      uploader
+    } = req.body;
+
+    // Basic backend validation
+    if (
+      !title ||
+      !subject ||
+      !description ||
+      !videoUrl ||
+      !slidesUrl ||
+      !labSheetUrl ||
+      !modelPaperUrl ||
+      !uploader
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Insert the new video into the database
+    const result = await pool.query(
+      `
+  INSERT INTO videos
+  (
+    title,
+    subject,
+    description,
+    video_url,
+    thumbnail_url,
+    uploader_name,
+    view_count,
+    rating,
+    created_at,
+    slides_url,
+    labsheet_url,
+    modelpaper_url
+  )
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_DATE, $9, $10, $11)
+  RETURNING *
+  `,
+      [
+        title,
+        subject,
+        description,
+        videoUrl,
+        "https://via.placeholder.com/300x180", // temporary thumbnail
+        uploader,
+        0,      // default view count
+        0.0,    // default rating
+        slidesUrl,
+        labSheetUrl,
+        modelPaperUrl
+      ]
+    );
+
+    const row = result.rows[0];
+
+    // Send back frontend-friendly field names
+    const video = {
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      description: row.description,
+      videoUrl: row.video_url,
+      thumbnailUrl: row.thumbnail_url,
+      uploader: row.uploader_name,
+      views: row.view_count,
+      rating: Number(row.rating),
+      createdAt: row.created_at
+    };
+
+    res.status(201).json({
+      message: "Video uploaded successfully",
+      video
+    });
+  } catch (error) {
+    console.error("Database error while uploading video:", error);
+    res.status(500).json({ message: "Failed to upload video" });
+  }
+});
+
+
 
 // update video
 app.put("/api/videos/:id", (req, res) => {
@@ -116,6 +265,8 @@ app.put("/api/videos/:id", (req, res) => {
     video: videos[index]
   });
 });
+
+
 
 // delete video
 app.delete("/api/videos/:id", (req, res) => {
