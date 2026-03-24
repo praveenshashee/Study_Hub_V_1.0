@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Resource – Study Hub</title>
+
+  <!-- Connect CSS file -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">📚 Study Hub</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="upload-resource.html" class="active">Upload</a>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Upload Learning Resource</h1>
+    <p>Add a new academic video resource</p>
+  </div>
+
+  <!-- Upload Form Card -->
+  <div class="form-container">
+    <form id="upload-form">
+      <label for="title">Video Title</label>
+      <input type="text" id="title" placeholder="e.g. Introduction to Data Structures" />
+
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" placeholder="e.g. Computer Science" />
+
+      <label for="description">Description</label>
+      <textarea id="description" rows="4" placeholder="Brief description of the video content..."></textarea>
+
+      <label for="videoUrl">Video URL</label>
+      <input type="text" id="videoUrl" placeholder="https://..." />
+
+      <label for="uploader">Uploader Name</label>
+      <input type="text" id="uploader" placeholder="Your name" />
+
+      <button type="submit">Submit Resource</button>
+    </form>
+
+    <!-- Validation or success messages will appear here -->
+    <div id="message"></div>
+  </div>
+
+  <!-- Connect JavaScript file -->
+  <script src="upload.js"></script>
+</body>
+</html>
