@@ -268,23 +268,31 @@ app.put("/api/videos/:id", (req, res) => {
 
 
 
-// delete video
-app.delete("/api/videos/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const index = videos.findIndex((v) => v.id === id);
+// Delete one video from PostgreSQL by id
+app.delete("/api/videos/:id", async (req, res) => {
+  try {
+    // Read the id from the URL
+    const id = Number(req.params.id);
 
-  if (index === -1) {
-    return res.status(404).json({ message: "Video not found" });
+    // Delete the row and return the deleted row
+    const result = await pool.query(
+      "DELETE FROM videos WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    // If nothing was deleted, that id does not exist
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    res.status(200).json({ message: "Video deleted successfully" });
+  } catch (error) {
+    console.error("Database error while deleting video:", error);
+    res.status(500).json({ message: "Failed to delete video" });
   }
-
-  const deletedVideo = videos.splice(index, 1);
-
-  res.status(200).json({
-    message: "Video deleted successfully",
-    video: deletedVideo[0]
-  });
 });
 
+// Start the Express server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
