@@ -41,6 +41,7 @@ fetch(`http://localhost:5001/api/videos/${videoId}/view`, {
         ${getMaterialLink(video.materials?.labSheet, "Lab Sheet")}
         ${getMaterialLink(video.materials?.modelPaper, "Model Paper")}
 
+        <a href="edit-video.html?id=${video.id}" class="view-btn edit-btn">Edit Video</a>
         <button id="delete-btn" class="delete-btn">Delete Video</button>
       </div>
     `;
