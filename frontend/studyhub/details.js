@@ -1,20 +1,31 @@
-// Get the details container from HTML
+// Get the container where video details will be displayed
 const detailsContainer = document.getElementById("details-container");
 
-// Read the id value from the URL
+// Read the video id from the page URL
 // Example: video-details.html?id=1
 const params = new URLSearchParams(window.location.search);
 const videoId = params.get("id");
 
-// First, send a PATCH request to increase the view count
+// Function to return a safe material link or a fallback message
+function getMaterialLink(url, label) {
+  // If the URL is missing, null, or empty, show "Not available"
+  if (!url || url === "null") {
+    return `<p><strong>${label}:</strong> Not available</p>`;
+  }
+
+  // Otherwise, show the real clickable link
+  return `<p><a href="${url}" target="_blank">${label}</a></p>`;
+}
+
+// First send a PATCH request to increase the view count
 fetch(`http://localhost:5001/api/videos/${videoId}/view`, {
   method: "PATCH"
 })
   .then((response) => response.json())
   .then((video) => {
-    console.log(video);
+    console.log("Loaded video details:", video);
 
-    // Show the updated video details on the page
+    // Render the selected video details
     detailsContainer.innerHTML = `
       <div class="video-card">
         <h2>${video.title}</h2>
@@ -26,13 +37,51 @@ fetch(`http://localhost:5001/api/videos/${videoId}/view`, {
         <p><strong>Date:</strong> ${video.createdAt}</p>
 
         <h3>Study Materials</h3>
-        <p><a href="${video.materials.slides}" target="_blank">Lecture Slides</a></p>
-        <p><a href="${video.materials.labSheet}" target="_blank">Lab Sheet</a></p>
-        <p><a href="${video.materials.modelPaper}" target="_blank">Model Paper</a></p>
+        ${getMaterialLink(video.materials?.slides, "Lecture Slides")}
+        ${getMaterialLink(video.materials?.labSheet, "Lab Sheet")}
+        ${getMaterialLink(video.materials?.modelPaper, "Model Paper")}
+
+        <button id="delete-btn" class="delete-btn">Delete Video</button>
       </div>
     `;
+
+    // Get the delete button after rendering it
+    const deleteBtn = document.getElementById("delete-btn");
+
+    // Add click event to delete the current video
+    deleteBtn.addEventListener("click", async () => {
+      const confirmed = confirm("Are you sure you want to delete this video?");
+
+      // Stop if user cancels
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        // Send DELETE request to backend
+        const response = await fetch(`http://localhost:5001/api/videos/${videoId}`, {
+          method: "DELETE"
+        });
+
+        const data = await response.json();
+
+        // If backend returns an error
+        if (!response.ok) {
+          alert(data.message || "Failed to delete video");
+          return;
+        }
+
+        alert("Video deleted successfully!");
+
+        // Redirect back to the main page
+        window.location.href = "index.html";
+      } catch (error) {
+        console.error("Error deleting video:", error);
+        alert("Failed to connect to backend");
+      }
+    });
   })
   .catch((error) => {
-    console.error("Error updating view count:", error);
+    console.error("Error loading video details:", error);
     detailsContainer.innerHTML = "<p>Failed to load video details.</p>";
   });
