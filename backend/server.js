@@ -101,7 +101,7 @@ app.get("/api/videos/:id", async (req, res) => {
         slides: row.slides_url,
         labSheet: row.labsheet_url,
         modelPaper: row.modelpaper_url
-          }
+      }
     };
 
     res.status(200).json(video);
@@ -144,7 +144,7 @@ app.patch("/api/videos/:id/view", async (req, res) => {
         slides: row.slides_url,
         labSheet: row.labsheet_url,
         modelPaper: row.modelpaper_url
-          }
+      }
     };
 
     res.status(200).json(video);
@@ -249,22 +249,103 @@ app.post("/api/videos", async (req, res) => {
 
 
 
-// update video
-app.put("/api/videos/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const index = videos.findIndex((v) => v.id === id);
+// Update an existing video in PostgreSQL
+app.put("/api/videos/:id", async (req, res) => {
+  try {
+    // Read id from URL
+    const id = Number(req.params.id);
 
-  if (index === -1) {
-    return res.status(404).json({ message: "Video not found" });
+    // Read updated values from frontend
+    const {
+      title,
+      subject,
+      description,
+      videoUrl,
+      slidesUrl,
+      labSheetUrl,
+      modelPaperUrl,
+      uploader
+    } = req.body;
+
+    // Basic backend validation
+    if (
+      !title ||
+      !subject ||
+      !description ||
+      !videoUrl ||
+      !slidesUrl ||
+      !labSheetUrl ||
+      !modelPaperUrl ||
+      !uploader
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Update row in PostgreSQL and return updated row
+    const result = await pool.query(
+      `
+      UPDATE videos
+      SET
+        title = $1,
+        subject = $2,
+        description = $3,
+        video_url = $4,
+        uploader_name = $5,
+        slides_url = $6,
+        labsheet_url = $7,
+        modelpaper_url = $8
+      WHERE id = $9
+      RETURNING *
+      `,
+      [
+        title,
+        subject,
+        description,
+        videoUrl,
+        uploader,
+        slidesUrl,
+        labSheetUrl,
+        modelPaperUrl,
+        id
+      ]
+    );
+
+    // If no video matched the id
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    const row = result.rows[0];
+
+    // Send frontend-friendly object
+    const video = {
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      description: row.description,
+      videoUrl: row.video_url,
+      thumbnailUrl: row.thumbnail_url,
+      uploader: row.uploader_name,
+      views: row.view_count,
+      rating: Number(row.rating),
+      createdAt: row.created_at,
+      materials: {
+        slides: row.slides_url,
+        labSheet: row.labsheet_url,
+        modelPaper: row.modelpaper_url
+      }
+    };
+
+    res.status(200).json({
+      message: "Video updated successfully",
+      video
+    });
+  } catch (error) {
+    console.error("Database error while updating video:", error);
+    res.status(500).json({ message: "Failed to update video" });
   }
-
-  videos[index] = { ...videos[index], ...req.body };
-
-  res.status(200).json({
-    message: "Video updated successfully",
-    video: videos[index]
-  });
 });
+
 
 
 
