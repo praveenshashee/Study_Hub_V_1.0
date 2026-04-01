@@ -1,0 +1,160 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../services/api.js";
+import CloudinaryUploadButton from "../components/CloudinaryUploadButton";
+
+function UploadVideo() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    subject: "",
+    description: "",
+    videoUrl: "",
+    videoPublicId: "",
+    thumbnailUrl: "",
+    videoPublicId: "",
+    labSheetUrl: "",
+    modelPaperUrl: "",
+    uploader: ""
+  });
+
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleVideoUploadSuccess = (uploadedVideo) => {
+    const generatedThumbnailUrl =
+      `https://res.cloudinary.com/de9xr5nq4/video/upload/so_1/${uploadedVideo.public_id}.jpg`;
+
+    setFormData((prev) => ({
+      ...prev,
+      videoUrl: uploadedVideo.secure_url,
+      videoPublicId: uploadedVideo.public_id,
+      thumbnailUrl: generatedThumbnailUrl
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      await api.post("/api/videos", formData);
+      setSuccessMessage("Video uploaded successfully");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    } catch (err) {
+      console.error("Failed to upload video:", err);
+      setError("Failed to upload video");
+    }
+  };
+
+  return (
+    <div className="form-page-container">
+      <Link to="/" className="back-link">← Back to Home</Link>
+
+      <h1>Upload New Video</h1>
+
+      <form onSubmit={handleSubmit} className="video-form">
+        <label>Video Title</label>
+        <input
+          type="text"
+          name="title"
+          placeholder="Video Title"
+          value={formData.title}
+          onChange={handleChange}
+          required
+        />
+
+        <label>Subject</label>
+        <input
+          type="text"
+          name="subject"
+          placeholder="Subject"
+          value={formData.subject}
+          onChange={handleChange}
+          required
+        />
+
+        <label>Description</label>
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+          required
+        />
+
+        <label>Upload Video</label>
+        <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
+
+        <label>Video URL</label>
+        <input
+          type="text"
+          name="videoUrl"
+          placeholder="Video will appear here after upload"
+          value={formData.videoUrl}
+          readOnly
+          required
+        />
+
+        {formData.videoUrl && (
+          <p className="success-text">Video uploaded to Cloudinary successfully</p>
+        )}
+
+        {formData.thumbnailUrl && (
+          <img
+            src={formData.thumbnailUrl}
+            alt="Video thumbnail preview"
+            className="thumbnail-preview"
+          />
+        )}
+
+        <label>Lab Sheet URL (Optional)</label>
+        <input
+          type="url"
+          name="labSheetUrl"
+          placeholder="Paste Google Drive Lab Sheet link (optional)"
+          value={formData.labSheetUrl}
+          onChange={handleChange}
+        />
+
+        <label>Model Paper URL (Optional)</label>
+        <input
+          type="url"
+          name="modelPaperUrl"
+          placeholder="Paste Google Drive Model Paper link (optional)"
+          value={formData.modelPaperUrl}
+          onChange={handleChange}
+        />
+
+        <label>Uploader Name</label>
+        <input
+          type="text"
+          name="uploader"
+          placeholder="Uploader Name"
+          value={formData.uploader}
+          onChange={handleChange}
+          required
+        />
+
+        <button type="submit">Upload Video</button>
+      </form>
+
+      {successMessage && <p className="success-text">{successMessage}</p>}
+      {error && <p className="error-text">{error}</p>}
+    </div>
+  );
+}
+
+export default UploadVideo;

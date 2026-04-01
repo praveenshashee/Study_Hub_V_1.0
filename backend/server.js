@@ -1,51 +1,16 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import pool from "./db.js";
+import cloudinary from "./cloudinary.js";
 
 const app = express();
 const PORT = 5001;
 
 app.use(cors());
 app.use(express.json());
-
-app.use(express.json());
-
-const videos = [
-  {
-    id: 1,
-    title: "DBMS Normalization Explained",
-    subject: "Database Systems",
-    description: "A simple explanation of 1NF, 2NF, and 3NF.",
-    videoUrl: "https://www.youtube.com/watch?v=example1",
-    thumbnailUrl: "https://via.placeholder.com/300x180",
-    uploader: "Praveen",
-    views: 120,
-    rating: 4.5,
-    createdAt: "2026-03-24",
-    materials: {
-      slides: "https://example.com/slides1.pdf",
-      labSheet: "https://example.com/lab1.pdf",
-      modelPaper: "https://example.com/model1.pdf"
-    }
-  },
-  {
-    id: 2,
-    title: "Operating Systems Deadlock Tutorial",
-    subject: "Operating Systems",
-    description: "Introduction to deadlock and prevention methods.",
-    videoUrl: "https://www.youtube.com/watch?v=example2",
-    thumbnailUrl: "https://via.placeholder.com/300x180",
-    uploader: "Alex",
-    views: 85,
-    rating: 4.2,
-    createdAt: "2026-03-20",
-    materials: {
-      slides: "https://example.com/slides2.pdf",
-      labSheet: "https://example.com/lab2.pdf",
-      modelPaper: "https://example.com/model2.pdf"
-    }
-  }
-];
 
 // Get all videos from PostgreSQL and map column names for frontend compatibility
 app.get("/api/videos", async (req, res) => {
@@ -98,7 +63,6 @@ app.get("/api/videos/:id", async (req, res) => {
       rating: Number(row.rating),
       createdAt: row.created_at,
       materials: {
-        slides: row.slides_url,
         labSheet: row.labsheet_url,
         modelPaper: row.modelpaper_url
       }
@@ -141,7 +105,6 @@ app.patch("/api/videos/:id/view", async (req, res) => {
       rating: Number(row.rating),
       createdAt: row.created_at,
       materials: {
-        slides: row.slides_url,
         labSheet: row.labsheet_url,
         modelPaper: row.modelpaper_url
       }
@@ -165,7 +128,8 @@ app.post("/api/videos", async (req, res) => {
       subject,
       description,
       videoUrl,
-      slidesUrl,
+      thumbnailUrl,
+      videoPublicId,
       labSheetUrl,
       modelPaperUrl,
       uploader
@@ -177,10 +141,9 @@ app.post("/api/videos", async (req, res) => {
       !subject ||
       !description ||
       !videoUrl ||
-      !slidesUrl ||
-      !labSheetUrl ||
-      !modelPaperUrl ||
-      !uploader
+      !uploader ||
+      !videoPublicId ||
+      !thumbnailUrl
     ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -195,15 +158,15 @@ app.post("/api/videos", async (req, res) => {
     description,
     video_url,
     thumbnail_url,
+    video_public_id,
     uploader_name,
     view_count,
     rating,
     created_at,
-    slides_url,
     labsheet_url,
     modelpaper_url
   )
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_DATE, $9, $10, $11)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_DATE, $10, $11)
   RETURNING *
   `,
       [
@@ -211,13 +174,13 @@ app.post("/api/videos", async (req, res) => {
         subject,
         description,
         videoUrl,
-        "https://via.placeholder.com/300x180", // temporary thumbnail
+        thumbnailUrl,
+        videoPublicId,
         uploader,
-        0,      // default view count
-        0.0,    // default rating
-        slidesUrl,
-        labSheetUrl,
-        modelPaperUrl
+        0,
+        0.0,
+        labSheetUrl || null,
+        modelPaperUrl || null
       ]
     );
 
@@ -231,6 +194,7 @@ app.post("/api/videos", async (req, res) => {
       description: row.description,
       videoUrl: row.video_url,
       thumbnailUrl: row.thumbnail_url,
+      videoPublicId: row.video_public_id,
       uploader: row.uploader_name,
       views: row.view_count,
       rating: Number(row.rating),
@@ -252,36 +216,70 @@ app.post("/api/videos", async (req, res) => {
 // Update an existing video in PostgreSQL
 app.put("/api/videos/:id", async (req, res) => {
   try {
-    // Read id from URL
+    // 1. Read id from URL
     const id = Number(req.params.id);
 
-    // Read updated values from frontend
+    // 2. Read updated values from frontend
     const {
       title,
       subject,
       description,
       videoUrl,
-      slidesUrl,
+      thumbnailUrl,
+      videoPublicId,
       labSheetUrl,
       modelPaperUrl,
       uploader
     } = req.body;
 
-    // Basic backend validation
+    // 3. Basic backend validation
     if (
       !title ||
       !subject ||
       !description ||
       !videoUrl ||
-      !slidesUrl ||
-      !labSheetUrl ||
-      !modelPaperUrl ||
+      !thumbnailUrl ||
+      !videoPublicId ||
       !uploader
     ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Update row in PostgreSQL and return updated row
+    // 4. Get existing video from database first
+    const existingResult = await pool.query(
+      "SELECT * FROM videos WHERE id = $1",
+      [id]
+    );
+
+    if (existingResult.rows.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    const existingVideo = existingResult.rows[0];
+
+    const oldPublicId = existingVideo.video_public_id;
+
+    const isVideoReplaced =
+      oldPublicId &&
+      videoPublicId &&
+      oldPublicId !== videoPublicId;
+
+    if (isVideoReplaced) {
+      try {
+        console.log("Deleting old Cloudinary video:", oldPublicId);
+
+        await cloudinary.uploader.destroy(oldPublicId, {
+          resource_type: "video",
+          invalidate: true
+        });
+
+        console.log("Old Cloudinary video delete request sent successfully");
+      } catch (cloudinaryError) {
+        console.error("Failed to delete old Cloudinary video:", cloudinaryError);
+      }
+    }
+
+    // 7. Update video row in PostgreSQL
     const result = await pool.query(
       `
       UPDATE videos
@@ -290,11 +288,12 @@ app.put("/api/videos/:id", async (req, res) => {
         subject = $2,
         description = $3,
         video_url = $4,
-        uploader_name = $5,
-        slides_url = $6,
-        labsheet_url = $7,
-        modelpaper_url = $8
-      WHERE id = $9
+        thumbnail_url = $5,
+        video_public_id = $6,
+        uploader_name = $7,
+        labsheet_url = $8,
+        modelpaper_url = $9
+      WHERE id = $10
       RETURNING *
       `,
       [
@@ -302,22 +301,18 @@ app.put("/api/videos/:id", async (req, res) => {
         subject,
         description,
         videoUrl,
+        thumbnailUrl,
+        videoPublicId,
         uploader,
-        slidesUrl,
-        labSheetUrl,
-        modelPaperUrl,
+        labSheetUrl || null,
+        modelPaperUrl || null,
         id
       ]
     );
 
-    // If no video matched the id
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Video not found" });
-    }
-
     const row = result.rows[0];
 
-    // Send frontend-friendly object
+    // 8. Send updated video back to frontend
     const video = {
       id: row.id,
       title: row.title,
@@ -325,12 +320,12 @@ app.put("/api/videos/:id", async (req, res) => {
       description: row.description,
       videoUrl: row.video_url,
       thumbnailUrl: row.thumbnail_url,
+      videoPublicId: row.video_public_id,
       uploader: row.uploader_name,
       views: row.view_count,
       rating: Number(row.rating),
       createdAt: row.created_at,
       materials: {
-        slides: row.slides_url,
         labSheet: row.labsheet_url,
         modelPaper: row.modelpaper_url
       }
