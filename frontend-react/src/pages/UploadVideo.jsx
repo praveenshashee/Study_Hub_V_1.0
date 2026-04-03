@@ -13,7 +13,6 @@ function UploadVideo() {
     videoUrl: "",
     videoPublicId: "",
     thumbnailUrl: "",
-    videoPublicId: "",
     labSheetUrl: "",
     modelPaperUrl: "",
     uploader: ""
@@ -63,7 +62,10 @@ function UploadVideo() {
     <div className="form-page-container">
       <Link to="/" className="back-link">← Back to Home</Link>
 
-      <h1>Upload New Video</h1>
+      <header className="page-header form-header">
+        <h1>Upload New Video</h1>
+        <p>Add a new academic video, connect Cloudinary media, and attach optional study materials.</p>
+      </header>
 
       <form onSubmit={handleSubmit} className="video-form">
         <label>Video Title</label>
@@ -95,48 +97,58 @@ function UploadVideo() {
           required
         />
 
-        <label>Upload Video</label>
-        <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
+        <div className="form-section">
+          <h2>Video Upload</h2>
+          <p className="section-help">Upload the main video through Cloudinary. The video link and preview thumbnail will be generated automatically.</p>
 
-        <label>Video URL</label>
-        <input
-          type="text"
-          name="videoUrl"
-          placeholder="Video will appear here after upload"
-          value={formData.videoUrl}
-          readOnly
-          required
-        />
+          <label>Upload Video</label>
+          <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
 
-        {formData.videoUrl && (
-          <p className="success-text">Video uploaded to Cloudinary successfully</p>
-        )}
-
-        {formData.thumbnailUrl && (
-          <img
-            src={formData.thumbnailUrl}
-            alt="Video thumbnail preview"
-            className="thumbnail-preview"
+          <label>Video URL</label>
+          <input
+            type="text"
+            name="videoUrl"
+            placeholder="Video will appear here after upload"
+            value={formData.videoUrl}
+            readOnly
+            required
           />
-        )}
 
-        <label>Lab Sheet URL (Optional)</label>
-        <input
-          type="url"
-          name="labSheetUrl"
-          placeholder="Paste Google Drive Lab Sheet link (optional)"
-          value={formData.labSheetUrl}
-          onChange={handleChange}
-        />
+          {formData.videoUrl && (
+            <p className="success-text">Video uploaded to Cloudinary successfully</p>
+          )}
 
-        <label>Model Paper URL (Optional)</label>
-        <input
-          type="url"
-          name="modelPaperUrl"
-          placeholder="Paste Google Drive Model Paper link (optional)"
-          value={formData.modelPaperUrl}
-          onChange={handleChange}
-        />
+          {formData.thumbnailUrl && (
+            <img
+              src={formData.thumbnailUrl}
+              alt="Video thumbnail preview"
+              className="thumbnail-preview"
+            />
+          )}
+        </div>
+
+        <div className="form-section">
+          <h2>Study Materials</h2>
+          <p className="section-help">Attach optional Google Drive links for supporting documents.</p>
+
+          <label>Lab Sheet URL (Optional)</label>
+          <input
+            type="url"
+            name="labSheetUrl"
+            placeholder="Paste Google Drive Lab Sheet link (optional)"
+            value={formData.labSheetUrl}
+            onChange={handleChange}
+          />
+
+          <label>Model Paper URL (Optional)</label>
+          <input
+            type="url"
+            name="modelPaperUrl"
+            placeholder="Paste Google Drive Model Paper link (optional)"
+            value={formData.modelPaperUrl}
+            onChange={handleChange}
+          />
+        </div>
 
         <label>Uploader Name</label>
         <input

@@ -131,13 +131,15 @@ function VideoDetails() {
         </ul>
       </div>
 
-      <Link to={`/edit/${video.id}`} className="edit-link">
-        Edit Video
-      </Link>
+      <div className="page-actions">
+        <Link to={`/edit/${video.id}`} className="edit-link">
+          Edit Video
+        </Link>
 
-      <button onClick={handleDelete} className="delete-button">
-        Delete Video
-      </button>
+        <button onClick={handleDelete} className="delete-button">
+          Delete Video
+        </button>
+      </div>
     </div>
   );
 }

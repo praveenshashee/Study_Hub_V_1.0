@@ -100,7 +100,10 @@ function EditVideo() {
     <div className="form-page-container">
       <Link to={`/video/${id}`} className="back-link">← Back to Details</Link>
 
-      <h1>Edit Video</h1>
+      <header className="page-header form-header">
+        <h1>Edit Video</h1>
+        <p>Update video details, replace the Cloudinary video, and manage optional study materials.</p>
+      </header>
 
       <form onSubmit={handleSubmit} className="video-form">
         <label>Video Title</label>
@@ -132,36 +135,54 @@ function EditVideo() {
           required
         />
 
-        <label>Replace Video</label>
-        <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
+        <div className="form-section">
+          <h2>Video Management</h2>
+          <p className="section-help">Replace the current video if needed. The thumbnail and Cloudinary asset data will update automatically.</p>
 
-        <label>Video URL</label>
-        <input
-          type="text"
-          name="videoUrl"
-          placeholder="Video URL"
-          value={formData.videoUrl}
-          readOnly
-          required
-        />
+          <label>Replace Video</label>
+          <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
 
-        <label>Lab Sheet URL (Optional)</label>
-        <input
-          type="url"
-          name="labSheetUrl"
-          placeholder="Paste Google Drive Lab Sheet link"
-          value={formData.labSheetUrl}
-          onChange={handleChange}
-        />
+          <label>Video URL</label>
+          <input
+            type="text"
+            name="videoUrl"
+            placeholder="Video URL"
+            value={formData.videoUrl}
+            readOnly
+            required
+          />
 
-        <label>Model Paper URL (Optional)</label>
-        <input
-          type="url"
-          name="modelPaperUrl"
-          placeholder="Paste Google Drive Model Paper link"
-          value={formData.modelPaperUrl}
-          onChange={handleChange}
-        />
+          {formData.thumbnailUrl && (
+            <img
+              src={formData.thumbnailUrl}
+              alt="Updated video thumbnail preview"
+              className="thumbnail-preview"
+            />
+          )}
+        </div>
+
+        <div className="form-section">
+          <h2>Study Materials</h2>
+          <p className="section-help">Update optional Google Drive links for supporting documents.</p>
+
+          <label>Lab Sheet URL (Optional)</label>
+          <input
+            type="url"
+            name="labSheetUrl"
+            placeholder="Paste Google Drive Lab Sheet link"
+            value={formData.labSheetUrl}
+            onChange={handleChange}
+          />
+
+          <label>Model Paper URL (Optional)</label>
+          <input
+            type="url"
+            name="modelPaperUrl"
+            placeholder="Paste Google Drive Model Paper link"
+            value={formData.modelPaperUrl}
+            onChange={handleChange}
+          />
+        </div>
 
         <label>Uploader Name</label>
         <input

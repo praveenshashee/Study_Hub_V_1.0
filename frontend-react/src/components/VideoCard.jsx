@@ -2,20 +2,29 @@ import { Link } from "react-router-dom";
 
 function VideoCard({ video }) {
   return (
-    <div className="video-card">
-      <img src={video.thumbnailUrl} alt={video.title} className="video-thumb" />
+    <Link to={`/video/${video.id}`} className="video-card-link">
+      <article className="video-card">
+        <div className="video-thumb-wrap">
+          <img
+            src={video.thumbnailUrl}
+            alt={video.title}
+            className="video-thumb"
+          />
+          <span className="video-subject-badge">{video.subject}</span>
+        </div>
 
-      <h3>{video.title}</h3>
-      <p><strong>Subject:</strong> {video.subject}</p>
-      <p>{video.description}</p>
-      <p><strong>Uploader:</strong> {video.uploader}</p>
-      <p><strong>Views:</strong> {video.views}</p>
-      <p><strong>Rating:</strong> {video.rating}</p>
+        <div className="video-card-body">
+          <h3>{video.title}</h3>
 
-      <Link to={`/video/${video.id}`} className="details-link">
-        View Details
-      </Link>
-    </div>
+          <div className="video-meta">
+            <span>{video.views} views</span>
+            <span>{video.rating} rating</span>
+          </div>
+
+          <p className="video-date">Added on {video.createdAt}</p>
+        </div>
+      </article>
+    </Link>
   );
 }
 
