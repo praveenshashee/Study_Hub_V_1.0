@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../services/api.js";
 import CloudinaryUploadButton from "../components/CloudinaryUploadButton";
@@ -58,7 +58,7 @@ function EditVideo() {
     });
   };
 
-  const handleVideoUploadSuccess = (uploadedVideo) => {
+  const handleVideoUploadSuccess = useCallback((uploadedVideo) => {
     const generatedThumbnailUrl =
       `https://res.cloudinary.com/de9xr5nq4/video/upload/so_1/${uploadedVideo.public_id}.jpg`;
 
@@ -68,7 +68,7 @@ function EditVideo() {
       thumbnailUrl: generatedThumbnailUrl,
       videoPublicId: uploadedVideo.public_id
     }));
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
