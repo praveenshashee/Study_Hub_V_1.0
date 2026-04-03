@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import net from "net";
+import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -18,11 +19,16 @@ const DEFAULT_PORT = Number(process.env.PORT || 5001);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const frontendDir = path.resolve(__dirname, "../frontend/studyhub");
+const frontendDir = path.resolve(__dirname, "../frontend/dist");
+const frontendIndexFile = path.join(frontendDir, "index.html");
+const hasFrontendBuild = existsSync(frontendIndexFile);
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(frontendDir));
+
+if (hasFrontendBuild) {
+  app.use(express.static(frontendDir));
+}
 
 function parseVideoId(rawId) {
   const id = Number(rawId);
@@ -207,8 +213,19 @@ app.delete("/api/videos/:id", async (req, res) => {
   }
 });
 
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(frontendDir, "index.html"));
+app.use("/api", (_req, res) => {
+  res.status(404).json({ message: "API route not found" });
+});
+
+app.get("*", (_req, res) => {
+  if (!hasFrontendBuild) {
+    res.status(503).send(
+      "The React frontend is not built yet. Run `npm run dev` for local development or `npm run build` before starting the server."
+    );
+    return;
+  }
+
+  res.sendFile(frontendIndexFile);
 });
 
 function checkPortAvailability(port) {
