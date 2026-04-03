@@ -1,0 +1,11 @@
+{
+  "name": "studyhub-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n BACKEND,FRONTEND -c green,blue \"npm run dev --prefix backend\" \"npm run dev --prefix frontend-react\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

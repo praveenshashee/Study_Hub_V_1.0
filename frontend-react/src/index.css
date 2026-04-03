@@ -1,0 +1,805 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ==================================================
+   STUDY HUB - GLOBAL THEME
+   ================================================== */
+:root {
+  --primary: #1f3b63;
+  --primary-light: #315b8d;
+  --primary-dark: #152943;
+
+  --accent: #d97706;
+  --accent-hover: #b45309;
+
+  --bg:
+    radial-gradient(circle at top left, rgba(254, 226, 226, 0.72), transparent 32%),
+    radial-gradient(circle at top right, rgba(219, 234, 254, 0.72), transparent 26%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+
+  --card-bg: rgba(255, 255, 255, 0.93);
+  --card-solid: #ffffff;
+
+  --text: #172033;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+
+  --success: #2f855a;
+  --error: #dc2626;
+
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 18px 42px rgba(15, 23, 42, 0.12);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: 0.22s ease;
+}
+
+body.light-theme {
+  --primary: #1f3b63;
+  --primary-light: #315b8d;
+  --primary-dark: #152943;
+
+  --accent: #d97706;
+  --accent-hover: #b45309;
+
+  --bg:
+    radial-gradient(circle at top left, rgba(254, 226, 226, 0.72), transparent 32%),
+    radial-gradient(circle at top right, rgba(219, 234, 254, 0.72), transparent 26%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+
+  --card-bg: rgba(255, 255, 255, 0.93);
+  --card-solid: #ffffff;
+
+  --text: #172033;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+
+  --success: #2f855a;
+  --error: #dc2626;
+
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 18px 42px rgba(15, 23, 42, 0.12);
+}
+
+body.dark-theme {
+  --primary: #7fb2ff;
+  --primary-light: #a7c9ff;
+  --primary-dark: #3f6ea8;
+
+  --accent: #f59e0b;
+  --accent-hover: #d97706;
+
+  --bg:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 24%),
+    linear-gradient(180deg, #0f172a 0%, #111827 100%);
+
+  --card-bg: rgba(30, 41, 59, 0.88);
+  --card-solid: #1e293b;
+
+  --text: #e5edf8;
+  --text-secondary: #c7d2e3;
+  --text-muted: #9aa8bd;
+  --border: #334155;
+
+  --success: #4ade80;
+  --error: #f87171;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ==================================================
+   NAVBAR - ALL PAGES
+   Used in: Navbar.jsx
+   ================================================== */
+.navbar {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar .nav-brand {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.nav-center-links {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nav-center-links a {
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+
+.nav-center-links a:hover,
+.nav-center-links a.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.theme-toggle-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.profile-menu {
+  position: relative;
+}
+
+.profile-icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.profile-avatar-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f59e0b, #fb7185);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition);
+}
+
+.profile-icon-btn:hover .profile-avatar-circle {
+  transform: translateY(-1px);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 190px;
+  background: var(--card-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 200;
+}
+
+.profile-dropdown a,
+.logout-btn {
+  text-decoration: none;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.profile-dropdown a:hover,
+.profile-dropdown a.active,
+.logout-btn:hover {
+  background: rgba(31, 59, 99, 0.08);
+  color: var(--primary);
+}
+
+.logout-btn {
+  font-family: inherit;
+}
+
+/* ==================================================
+   SHARED PAGE LAYOUT
+   Used in: Home, VideoDetails, UploadVideo, EditVideo
+   ================================================== */
+.home-container,
+.details-container,
+.form-page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+}
+
+.form-page-container {
+  max-width: 780px;
+}
+
+.page-header {
+  text-align: center;
+  padding: 18px 24px 24px;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 8px;
+}
+
+.page-header p {
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.form-header {
+  padding-top: 8px;
+  padding-bottom: 24px;
+}
+
+.page-message {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ==================================================
+   SHARED ACTION BUTTONS / LINKS
+   Used in: details page, upload/edit forms, materials
+   ================================================== */
+.back-link,
+.upload-link,
+.edit-link,
+.material-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: white;
+  background: var(--accent);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.back-link:hover,
+.upload-link:hover,
+.edit-link:hover,
+.material-link:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.back-link {
+  margin-bottom: 24px;
+}
+
+.edit-link {
+  padding: 12px 20px;
+}
+
+.delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: #c62828;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.delete-button:hover {
+  background: #a61f1f;
+  transform: translateY(-1px);
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ==================================================
+   HOME PAGE
+   Used in: Home.jsx
+   ================================================== */
+.controls {
+  max-width: 960px;
+  margin: 0 auto 32px;
+  padding: 0 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 220px;
+  max-width: 420px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  outline: none;
+  background: var(--card-solid);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
+}
+
+.sort-select {
+  min-width: 220px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-solid);
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.sort-select:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
+}
+
+/* ==================================================
+   VIDEO CARD GRID - HOME PAGE
+   Used in: VideoCard.jsx
+   ================================================== */
+.video-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 24px;
+}
+
+.video-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.video-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  backdrop-filter: blur(6px);
+}
+
+.video-card-link:hover .video-card {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.video-thumb-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.video-card-link:hover .video-thumb {
+  transform: scale(1.03);
+}
+
+.video-thumb {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition);
+}
+
+.video-subject-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(31, 59, 99, 0.92);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.video-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.video-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.video-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.video-meta span {
+  background: rgba(217, 119, 6, 0.1);
+  color: #8a4b08;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.video-date {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ==================================================
+   VIDEO DETAILS PAGE
+   Used in: VideoDetails.jsx
+   ================================================== */
+.details-container h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 12px;
+}
+
+.details-container p {
+  font-size: 0.96rem;
+  color: var(--text-secondary);
+  margin: 8px 0;
+}
+
+.details-container p strong {
+  color: var(--text);
+}
+
+.video-player-section,
+.materials-section {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+}
+
+.video-player-section {
+  margin: 28px 0;
+  padding: 20px;
+}
+
+.video-player-section h2 {
+  margin: 0 0 16px;
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 14px;
+  background: #000;
+  display: block;
+  box-shadow: var(--shadow-md);
+}
+
+.materials-section {
+  margin-top: 28px;
+  padding: 20px;
+}
+
+.materials-section h2 {
+  margin: 0 0 16px;
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.materials-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.materials-section li {
+  margin-bottom: 14px;
+}
+
+.material-link {
+  min-width: 190px;
+}
+
+.material-unavailable {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ==================================================
+   UPLOAD PAGE + EDIT PAGE
+   Used in: UploadVideo.jsx, EditVideo.jsx
+   ================================================== */
+.video-form,
+.form-section {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+}
+
+.video-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+}
+
+.video-form label {
+  font-weight: 600;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  display: block;
+  color: var(--text);
+}
+
+.video-form input,
+.video-form textarea,
+.video-form button {
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+}
+
+.video-form input,
+.video-form textarea {
+  border: 2px solid var(--border);
+  background: #fff;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.video-form input:focus,
+.video-form textarea:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
+}
+
+.video-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.video-form button {
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+  width: fit-content;
+  min-width: 180px;
+  align-self: flex-start;
+}
+
+.video-form button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.form-section {
+  margin-top: 12px;
+  padding: 18px;
+  background: rgba(248, 250, 252, 0.88);
+}
+
+.form-section h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+
+.section-help {
+  margin: 0 0 14px;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.thumbnail-preview {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 12px;
+  margin-top: 12px;
+  display: block;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==================================================
+   STATUS / FEEDBACK TEXT
+   Used in: upload/edit messages and load states
+   ================================================== */
+.success-text {
+  color: var(--success);
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+.error-text {
+  color: var(--error);
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+/* ==================================================
+   MOBILE RESPONSIVE
+   ================================================== */
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .navbar .nav-brand {
+    font-size: 1.08rem;
+  }
+
+  .navbar .nav-links a {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+
+  .page-header {
+    padding: 28px 16px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 1.55rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 16px;
+  }
+
+  .home-container,
+  .details-container,
+  .form-page-container {
+    padding: 20px 16px 32px;
+  }
+
+  .video-list {
+    grid-template-columns: 1fr;
+  }
+
+  .page-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .back-link,
+  .upload-link,
+  .edit-link,
+  .delete-button,
+  .material-link {
+    width: 100%;
+  }
+
+  .video-form button {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .nav-center-links {
+    gap: 4px;
+  }
+
+  .nav-center-links a {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+
+  .profile-avatar-circle {
+    width: 38px;
+    height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .profile-dropdown {
+    right: 0;
+    min-width: 170px;
+  }
+
+    .nav-right {
+    gap: 10px;
+  }
+
+  .theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.92rem;
+  }
+}
