@@ -58,6 +58,7 @@ app.get("/api/videos/:id", async (req, res) => {
       description: row.description,
       videoUrl: row.video_url,
       thumbnailUrl: row.thumbnail_url,
+      videoPublicId: row.video_public_id,
       uploader: row.uploader_name,
       views: row.view_count,
       rating: Number(row.rating),
