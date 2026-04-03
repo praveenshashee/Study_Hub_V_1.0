@@ -1,37 +1,71 @@
 # StudyHub Project
 
-## Folder Structure
+StudyHub is a small full-stack learning resource app. The backend is an Express API and the frontend is a static multi-page site served directly by the backend.
 
-- `frontend/studyhub/` - Study Hub frontend files
-- `backend/` - Express backend files
+## Quick Start
 
-## Frontend Files
-- `index.html` - Main Study Hub page
-- `video-details.html` - Video details page
-- `upload-resource.html` - Upload resource page
-- `style.css` - Main styling
-- `main.js` - Main page logic
-- `details.js` - Details page logic
-- `upload.js` - Upload form validation logic
+1. Open a terminal in the project root.
+2. Install everything:
 
-## Backend Files
-- `server.js` - Express server and API routes
-
-## How to Run
-
-### Backend
-1. Open terminal in `backend`
-2. Run:
+   ```bash
    npm install
-   npm run dev
+   ```
 
-### Frontend
-1. Open `frontend/studyhub/index.html` with Live Server
+3. Start the app:
+
+   ```bash
+   npm start
+   ```
+
+4. Open `http://localhost:5001`
+
+If `5001` is already in use, the server automatically starts on the next free port such as `5002`.
+
+## Default Local Setup
+
+The project now runs out of the box with local JSON storage in:
+
+- `backend/data/videos.json`
+
+No PostgreSQL setup is required for local development.
+
+## Development Mode
+
+Run the backend with nodemon:
+
+```bash
+npm run dev
+```
+
+## Optional PostgreSQL Setup
+
+If you want to use PostgreSQL instead of the local JSON file:
+
+1. Copy `backend/.env.example` values into your own environment.
+2. Set `STORAGE_DRIVER=postgres`
+3. Provide either:
+   - `DATABASE_URL`
+   - or `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+4. Create the table with `backend/schema.sql`.
 
 ## Current Features
+
 - Display videos
 - Search videos
 - Sort videos
 - View video details
-- View count increment
-- Upload form validation
+- Increment view counts
+- Upload new resources
+- Edit resources
+- Delete resources
+- User dashboard
+- Recently watched tracking
+- Saved and bookmarked resources
+- Recommended and popular content
+
+## Project Structure
+
+- `frontend/studyhub/` - HTML, CSS, and browser JavaScript
+- `backend/server.js` - Express app and API routes
+- `backend/storage.js` - Storage layer for JSON or PostgreSQL
+- `backend/data/videos.json` - Default local data store

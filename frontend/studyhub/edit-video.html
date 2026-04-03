@@ -3,18 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit Video</title>
+  <title>Edit Video - Study Hub</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Shared navbar -->
-  <div class="navbar">
-    <a href="index.html">Study Hub</a>
-    <a href="upload-resource.html">Upload Resource</a>
-  </div>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">Study Hub</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="upload-resource.html">Upload</a>
+    </div>
+  </nav>
 
-  <h1>Edit Video</h1>
-  <p>Update an existing learning resource</p>
+  <div class="page-header">
+    <h1>Edit Video</h1>
+    <p>Update an existing learning resource</p>
+  </div>
 
   <div class="form-container">
     <form id="edit-form">
@@ -48,6 +53,7 @@
     <div id="message"></div>
   </div>
 
+  <script src="api.js"></script>
   <script src="edit.js"></script>
 </body>
 </html>

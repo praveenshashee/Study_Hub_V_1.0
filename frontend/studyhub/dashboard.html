@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Study Hub</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dashboard-page">
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">Study Hub</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="upload-resource.html">Upload</a>
+    </div>
+  </nav>
+
+  <main class="watch-dashboard">
+    <aside class="dashboard-rail">
+      <div class="rail-card profile-spotlight">
+        <div class="profile-avatar">SH</div>
+        <div>
+          <p class="rail-kicker">Personalized</p>
+          <h1>Your Study Feed</h1>
+          <p>Resume sessions, save videos for later, and get recommendations tuned to what you watch.</p>
+        </div>
+      </div>
+
+      <nav class="rail-card quick-nav">
+        <a href="#continue-watching">Continue Watching</a>
+        <a href="#watch-later">Watch Later</a>
+        <a href="#recommended">Recommended</a>
+        <a href="#popular">Popular Now</a>
+      </nav>
+
+      <section class="rail-card insights-card">
+        <div class="rail-heading">
+          <h2>Quick Insights</h2>
+        </div>
+        <div id="dashboard-insights"></div>
+      </section>
+
+      <section class="rail-card activity-card">
+        <div class="rail-heading">
+          <h2>Recent Activity</h2>
+        </div>
+        <div id="activity-timeline"></div>
+      </section>
+    </aside>
+
+    <section class="dashboard-feed">
+      <section id="dashboard-hero" class="hero-stage"></section>
+
+      <section class="chip-bar-shell">
+        <div class="rail-heading">
+          <h2>Tune Your Feed</h2>
+          <p>Filter shelves by the subjects you care about right now.</p>
+        </div>
+        <div id="subject-chip-row" class="chip-row"></div>
+      </section>
+
+      <section id="continue-watching" class="shelf-section">
+        <div class="rail-heading">
+          <h2>Continue Watching</h2>
+          <p>Pick up where you left off.</p>
+        </div>
+        <div id="continue-watching-track" class="shelf-track"></div>
+      </section>
+
+      <section id="watch-later" class="shelf-section">
+        <div class="rail-heading">
+          <h2>Saved To Watch Later</h2>
+          <p>Your bookmarked library, ready when you are.</p>
+        </div>
+        <div id="watch-later-track" class="shelf-track"></div>
+      </section>
+
+      <section id="recommended" class="shelf-section">
+        <div class="rail-heading">
+          <h2>Recommended For You</h2>
+          <p id="recommendation-subtitle">Generated from your recent study behavior.</p>
+        </div>
+        <div id="recommended-track" class="shelf-track"></div>
+      </section>
+
+      <section id="popular" class="shelf-section">
+        <div class="rail-heading">
+          <h2>Popular Right Now</h2>
+          <p>The most watched resources in Study Hub.</p>
+        </div>
+        <div id="popular-track" class="shelf-track"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="api.js"></script>
+  <script src="personalization.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

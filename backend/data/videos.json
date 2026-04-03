@@ -1,0 +1,138 @@
+[
+  {
+    "id": 1,
+    "title": "DBMS Normalization Explained",
+    "subject": "Database Systems",
+    "description": "A simple explanation of 1NF, 2NF, and 3NF with examples and common mistakes.",
+    "videoUrl": "https://www.youtube.com/watch?v=example1",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Praveen",
+    "views": 121,
+    "rating": 4.5,
+    "createdAt": "2026-03-24",
+    "materials": {
+      "slides": "https://example.com/slides1.pdf",
+      "labSheet": "https://example.com/lab1.pdf",
+      "modelPaper": "https://example.com/model1.pdf"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Operating Systems Deadlock Tutorial",
+    "subject": "Operating Systems",
+    "description": "Introduction to deadlock, prevention methods, and practical exam-focused examples.",
+    "videoUrl": "https://www.youtube.com/watch?v=example2",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Alex",
+    "views": 85,
+    "rating": 4.2,
+    "createdAt": "2026-03-20",
+    "materials": {
+      "slides": "https://example.com/slides2.pdf",
+      "labSheet": "https://example.com/lab2.pdf",
+      "modelPaper": "https://example.com/model2.pdf"
+    }
+  },
+  {
+    "id": 3,
+    "title": "SQL Joins Crash Course",
+    "subject": "Database Systems",
+    "description": "Inner join, left join, right join, and full join explained with clear table examples.",
+    "videoUrl": "https://www.youtube.com/watch?v=example3",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Nimali",
+    "views": 216,
+    "rating": 4.8,
+    "createdAt": "2026-03-26",
+    "materials": {
+      "slides": "https://example.com/slides3.pdf",
+      "labSheet": "https://example.com/lab3.pdf",
+      "modelPaper": "https://example.com/model3.pdf"
+    }
+  },
+  {
+    "id": 4,
+    "title": "CPU Scheduling Algorithms Made Easy",
+    "subject": "Operating Systems",
+    "description": "FCFS, SJF, Round Robin, and priority scheduling with solved turnaround time examples.",
+    "videoUrl": "https://www.youtube.com/watch?v=example4",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Kavindu",
+    "views": 182,
+    "rating": 4.6,
+    "createdAt": "2026-03-22",
+    "materials": {
+      "slides": "https://example.com/slides4.pdf",
+      "labSheet": "https://example.com/lab4.pdf",
+      "modelPaper": "https://example.com/model4.pdf"
+    }
+  },
+  {
+    "id": 5,
+    "title": "Stacks and Queues for Beginners",
+    "subject": "Data Structures",
+    "description": "Core stack and queue operations, applications, and linked list implementation basics.",
+    "videoUrl": "https://www.youtube.com/watch?v=example5",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Hashini",
+    "views": 201,
+    "rating": 4.7,
+    "createdAt": "2026-03-25",
+    "materials": {
+      "slides": "https://example.com/slides5.pdf",
+      "labSheet": "https://example.com/lab5.pdf",
+      "modelPaper": "https://example.com/model5.pdf"
+    }
+  },
+  {
+    "id": 6,
+    "title": "Binary Search Trees Explained",
+    "subject": "Data Structures",
+    "description": "Insertion, deletion, traversal, and balanced tree intuition for exams and coding labs.",
+    "videoUrl": "https://www.youtube.com/watch?v=example6",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Sajith",
+    "views": 162,
+    "rating": 4.4,
+    "createdAt": "2026-03-18",
+    "materials": {
+      "slides": "https://example.com/slides6.pdf",
+      "labSheet": "https://example.com/lab6.pdf",
+      "modelPaper": "https://example.com/model6.pdf"
+    }
+  },
+  {
+    "id": 7,
+    "title": "TCP vs UDP in 15 Minutes",
+    "subject": "Computer Networks",
+    "description": "Compare TCP and UDP using reliability, flow control, and real-world networking scenarios.",
+    "videoUrl": "https://www.youtube.com/watch?v=example7",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Ishara",
+    "views": 143,
+    "rating": 4.3,
+    "createdAt": "2026-03-19",
+    "materials": {
+      "slides": "https://example.com/slides7.pdf",
+      "labSheet": "https://example.com/lab7.pdf",
+      "modelPaper": "https://example.com/model7.pdf"
+    }
+  },
+  {
+    "id": 8,
+    "title": "IP Addressing and Subnetting Practice",
+    "subject": "Computer Networks",
+    "description": "Step-by-step subnetting walkthroughs for CIDR, masks, and host calculation practice.",
+    "videoUrl": "https://www.youtube.com/watch?v=example8",
+    "thumbnailUrl": "https://via.placeholder.com/300x180",
+    "uploader": "Tharushi",
+    "views": 191,
+    "rating": 4.6,
+    "createdAt": "2026-03-27",
+    "materials": {
+      "slides": "https://example.com/slides8.pdf",
+      "labSheet": "https://example.com/lab8.pdf",
+      "modelPaper": "https://example.com/model8.pdf"
+    }
+  }
+]

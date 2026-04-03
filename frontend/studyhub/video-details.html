@@ -3,32 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Video Details – Study Hub</title>
-
-  <!-- Connect CSS file -->
+  <title>Video Details - Study Hub</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Navigation Bar -->
   <nav class="navbar">
-    <a href="index.html" class="nav-brand">📚 Study Hub</a>
+    <a href="index.html" class="nav-brand">Study Hub</a>
     <div class="nav-links">
       <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
       <a href="upload-resource.html">Upload</a>
     </div>
   </nav>
 
-  <!-- Page Header -->
   <div class="page-header">
     <h1>Video Details</h1>
     <p>Selected learning resource</p>
   </div>
 
-  <!-- This container will show one selected video (filled by details.js) -->
   <div id="details-container"></div>
 
-  <!-- Connect JavaScript file for the details page -->
+  <script src="api.js"></script>
+  <script src="personalization.js"></script>
   <script src="details.js"></script>
 </body>
 </html>

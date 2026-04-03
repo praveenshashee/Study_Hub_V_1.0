@@ -1,112 +1,95 @@
-// Get form and message box from HTML
 const uploadForm = document.getElementById("upload-form");
 const message = document.getElementById("message");
 
-// This function checks if a text value is empty or only spaces
 function isEmpty(value) {
   return value.trim() === "";
 }
 
-// This function checks whether a URL starts with http:// or https://
 function isValidUrl(url) {
-  return url.startsWith("http://") || url.startsWith("https://");
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
-// Listen for form submission
+function setMessage(type, text) {
+  message.className = type;
+  message.textContent = text;
+}
+
+function clearMessage() {
+  message.className = "";
+  message.textContent = "";
+}
+
 uploadForm.addEventListener("submit", async (event) => {
-  // Prevent page refresh when form is submitted
   event.preventDefault();
 
-// Get values from input fields
-const title = document.getElementById("title").value;
-const subject = document.getElementById("subject").value;
-const description = document.getElementById("description").value;
-const videoUrl = document.getElementById("videoUrl").value;
-const slidesUrl = document.getElementById("slidesUrl").value;
-const labSheetUrl = document.getElementById("labSheetUrl").value;
-const modelPaperUrl = document.getElementById("modelPaperUrl").value;
-const uploader = document.getElementById("uploader").value;
+  const title = document.getElementById("title").value.trim();
+  const subject = document.getElementById("subject").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const videoUrl = document.getElementById("videoUrl").value.trim();
+  const slidesUrl = document.getElementById("slidesUrl").value.trim();
+  const labSheetUrl = document.getElementById("labSheetUrl").value.trim();
+  const modelPaperUrl = document.getElementById("modelPaperUrl").value.trim();
+  const uploader = document.getElementById("uploader").value.trim();
 
-  // Clear old message
-  message.innerHTML = "";
+  clearMessage();
 
-  // Validation checks
   if (isEmpty(title)) {
-    message.innerHTML = "<p class='error'>Video Title is required.</p>";
+    setMessage("error", "Video Title is required.");
     return;
   }
 
-  if (title.trim().length < 3) {
-    message.innerHTML = "<p class='error'>Video Title must have at least 3 characters.</p>";
+  if (title.length < 3) {
+    setMessage("error", "Video Title must have at least 3 characters.");
     return;
   }
 
   if (isEmpty(subject)) {
-    message.innerHTML = "<p class='error'>Subject is required.</p>";
+    setMessage("error", "Subject is required.");
     return;
   }
 
   if (isEmpty(description)) {
-    message.innerHTML = "<p class='error'>Description is required.</p>";
+    setMessage("error", "Description is required.");
     return;
   }
 
-  if (description.trim().length < 10) {
-    message.innerHTML = "<p class='error'>Description must have at least 10 characters.</p>";
+  if (description.length < 10) {
+    setMessage("error", "Description must have at least 10 characters.");
     return;
   }
 
-  if (isEmpty(videoUrl)) {
-    message.innerHTML = "<p class='error'>Video URL is required.</p>";
+  if (isEmpty(videoUrl) || !isValidUrl(videoUrl)) {
+    setMessage("error", "Please enter a valid Video URL.");
     return;
   }
 
-  if (!isValidUrl(videoUrl)) {
-    message.innerHTML = "<p class='error'>Please enter a valid Video URL.</p>";
+  if (isEmpty(slidesUrl) || !isValidUrl(slidesUrl)) {
+    setMessage("error", "Please enter a valid Lecture Slides URL.");
     return;
   }
 
-  // Validate lecture slides URL
-  if (isEmpty(slidesUrl)) {
-    message.innerHTML = "<p class='error'>Lecture Slides URL is required.</p>";
+  if (isEmpty(labSheetUrl) || !isValidUrl(labSheetUrl)) {
+    setMessage("error", "Please enter a valid Lab Sheet URL.");
     return;
   }
 
-  if (!isValidUrl(slidesUrl)) {
-    message.innerHTML = "<p class='error'>Please enter a valid Lecture Slides URL.</p>";
-    return;
-  }
-
-  // Validate lab sheet URL
-  if (isEmpty(labSheetUrl)) {
-    message.innerHTML = "<p class='error'>Lab Sheet URL is required.</p>";
-    return;
-  }
-
-  if (!isValidUrl(labSheetUrl)) {
-    message.innerHTML = "<p class='error'>Please enter a valid Lab Sheet URL.</p>";
-    return;
-  }
-
-  // Validate model paper URL
-  if (isEmpty(modelPaperUrl)) {
-    message.innerHTML = "<p class='error'>Model Paper URL is required.</p>";
-    return;
-  }
-
-  if (!isValidUrl(modelPaperUrl)) {
-    message.innerHTML = "<p class='error'>Please enter a valid Model Paper URL.</p>";
+  if (isEmpty(modelPaperUrl) || !isValidUrl(modelPaperUrl)) {
+    setMessage("error", "Please enter a valid Model Paper URL.");
     return;
   }
 
   if (isEmpty(uploader)) {
-    message.innerHTML = "<p class='error'>Uploader Name is required.</p>";
+    setMessage("error", "Uploader Name is required.");
     return;
   }
 
   try {
-    // Send form data to backend API
-    const response = await fetch("http://localhost:5001/api/videos", {
+    const response = await fetch(window.StudyHubApi.buildUrl("/api/videos"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -126,19 +109,14 @@ const uploader = document.getElementById("uploader").value;
     const data = await response.json();
 
     if (!response.ok) {
-      message.innerHTML = `<p class='error'>${data.message}</p>`;
+      setMessage("error", data.message || "Failed to upload video.");
       return;
     }
 
-    // Success message
-    message.innerHTML = "<p class='success'>Video uploaded successfully!</p>";
-
-    // Reset form after successful upload
+    setMessage("success", "Video uploaded successfully!");
     uploadForm.reset();
-
-    console.log("Uploaded video:", data.video);
   } catch (error) {
     console.error("Error submitting form:", error);
-    message.innerHTML = "<p class='error'>Failed to connect to backend.</p>";
+    setMessage("error", "Failed to connect to backend.");
   }
 });

@@ -3,29 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Resource – Study Hub</title>
-
-  <!-- Connect CSS file -->
+  <title>Upload Resource - Study Hub</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Navigation Bar -->
   <nav class="navbar">
-    <a href="index.html" class="nav-brand">📚 Study Hub</a>
+    <a href="index.html" class="nav-brand">Study Hub</a>
     <div class="nav-links">
       <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
       <a href="upload-resource.html" class="active">Upload</a>
     </div>
   </nav>
 
-  <!-- Page Header -->
   <div class="page-header">
     <h1>Upload Learning Resource</h1>
     <p>Add a new academic video resource</p>
   </div>
 
-  <!-- Upload Form Card -->
   <div class="form-container">
     <form id="upload-form">
       <label for="title">Video Title</label>
@@ -43,7 +38,7 @@
       <label for="slidesUrl">Lecture Slides URL</label>
       <input type="text" id="slidesUrl" />
 
-      <label  for="labSheetUrl">Lab Sheet URL</label>
+      <label for="labSheetUrl">Lab Sheet URL</label>
       <input type="text" id="labSheetUrl" />
 
       <label for="modelPaperUrl">Model Paper URL</label>
@@ -55,11 +50,10 @@
       <button type="submit">Submit Resource</button>
     </form>
 
-    <!-- Validation or success messages will appear here -->
     <div id="message"></div>
   </div>
 
-  <!-- Connect JavaScript file -->
+  <script src="api.js"></script>
   <script src="upload.js"></script>
 </body>
 </html>
