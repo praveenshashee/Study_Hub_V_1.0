@@ -60,33 +60,38 @@ function Home() {
 
   return (
     <div className="home-container">
-      <h1>StudyHub Videos</h1>
+      <header className="page-header">
+        <h1>StudyHub Videos</h1>
+        <p>Browse, manage, and explore academic video resources.</p>
+      </header>
 
-      <Link to="/upload" className="upload-link">
-        + Upload New Video
-      </Link>
+      <div className="controls">
+        <input
+          type="text"
+          placeholder="Search videos by title..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
 
-      <input
-        type="text"
-        placeholder="Search videos by title..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="search-input"
-      />
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="sort-select"
+        >
+          <option value="">Default Order</option>
+          <option value="title-asc">Title A-Z</option>
+          <option value="title-desc">Title Z-A</option>
+          <option value="views-asc">Views Low to High</option>
+          <option value="views-desc">Views High to Low</option>
+          <option value="date-newest">Newest First</option>
+          <option value="date-oldest">Oldest First</option>
+        </select>
 
-      <select
-        value={sortOption}
-        onChange={(e) => setSortOption(e.target.value)}
-        className="sort-select"
-      >
-        <option value="">Default Order</option>
-        <option value="title-asc">Title A-Z</option>
-        <option value="title-desc">Title Z-A</option>
-        <option value="views-asc">Views Low to High</option>
-        <option value="views-desc">Views High to Low</option>
-        <option value="date-newest">Newest First</option>
-        <option value="date-oldest">Oldest First</option>
-      </select>
+        <Link to="/upload" className="upload-link">
+          + Upload New Video
+        </Link>
+      </div>
 
       {loading && <p>Loading videos...</p>}
       {error && <p>{error}</p>}
