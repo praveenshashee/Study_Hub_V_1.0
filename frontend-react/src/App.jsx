@@ -5,6 +5,12 @@ import VideoDetails from "./pages/VideoDetails";
 import UploadVideo from "./pages/UploadVideo";
 import EditVideo from "./pages/EditVideo";
 import Navbar from "./components/Navbar";
+import InternshipsHome from "./pages/Internship/InternshipsHome";
+import AddInternshipPage from "./pages/Internship/AddInternshipPage";
+import InternshipDetailsPage from "./pages/Internship/InternshipDetailsPage";
+import UpdateInternshipPage from "./pages/Internship/UpdateInternshipPage";
+import DeleteInternshipPage from "./pages/Internship/DeleteInternshipPage";
+
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -29,6 +35,11 @@ function App() {
         <Route path="/video/:id" element={<VideoDetails />} />
         <Route path="/upload" element={<UploadVideo />} />
         <Route path="/edit/:id" element={<EditVideo />} />
+        <Route path="/internships" element={<InternshipsHome />} />
+        <Route path="/internships/add" element={<AddInternshipPage />} />
+        <Route path="/internships/details/:id" element={<InternshipDetailsPage />} />
+        <Route path="/internships/update/:id" element={<UpdateInternshipPage />} />
+        <Route path="/internships/delete/:id" element={<DeleteInternshipPage />} />
       </Routes>
     </>
   );
