@@ -37,8 +37,6 @@ app.get("/api/videos", async (req, res) => {
   }
 });
 
-
-
 // Get one video by id from PostgreSQL and map column names for frontend compatibility
 app.get("/api/videos/:id", async (req, res) => {
   try {
@@ -75,8 +73,6 @@ app.get("/api/videos/:id", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch video from database" });
   }
 });
-
-
 
 // Increase view count and return frontend-friendly field names
 app.patch("/api/videos/:id/view", async (req, res) => {
@@ -118,12 +114,9 @@ app.patch("/api/videos/:id/view", async (req, res) => {
   }
 });
 
-
-
 // Add a new video to PostgreSQL
 app.post("/api/videos", async (req, res) => {
   try {
-    // Get data sent from the frontend
     const {
       title,
       subject,
@@ -136,7 +129,6 @@ app.post("/api/videos", async (req, res) => {
       uploader
     } = req.body;
 
-    // Basic backend validation
     if (
       !title ||
       !subject ||
@@ -149,27 +141,26 @@ app.post("/api/videos", async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Insert the new video into the database
     const result = await pool.query(
       `
-  INSERT INTO videos
-  (
-    title,
-    subject,
-    description,
-    video_url,
-    thumbnail_url,
-    video_public_id,
-    uploader_name,
-    view_count,
-    rating,
-    created_at,
-    labsheet_url,
-    modelpaper_url
-  )
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_DATE, $10, $11)
-  RETURNING *
-  `,
+      INSERT INTO videos
+      (
+        title,
+        subject,
+        description,
+        video_url,
+        thumbnail_url,
+        video_public_id,
+        uploader_name,
+        view_count,
+        rating,
+        created_at,
+        labsheet_url,
+        modelpaper_url
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_DATE, $10, $11)
+      RETURNING *
+      `,
       [
         title,
         subject,
@@ -187,7 +178,6 @@ app.post("/api/videos", async (req, res) => {
 
     const row = result.rows[0];
 
-    // Send back frontend-friendly field names
     const video = {
       id: row.id,
       title: row.title,
@@ -212,15 +202,11 @@ app.post("/api/videos", async (req, res) => {
   }
 });
 
-
-
 // Update an existing video in PostgreSQL
 app.put("/api/videos/:id", async (req, res) => {
   try {
-    // 1. Read id from URL
     const id = Number(req.params.id);
 
-    // 2. Read updated values from frontend
     const {
       title,
       subject,
@@ -233,7 +219,6 @@ app.put("/api/videos/:id", async (req, res) => {
       uploader
     } = req.body;
 
-    // 3. Basic backend validation
     if (
       !title ||
       !subject ||
@@ -246,7 +231,6 @@ app.put("/api/videos/:id", async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // 4. Get existing video from database first
     const existingResult = await pool.query(
       "SELECT * FROM videos WHERE id = $1",
       [id]
@@ -257,7 +241,6 @@ app.put("/api/videos/:id", async (req, res) => {
     }
 
     const existingVideo = existingResult.rows[0];
-
     const oldPublicId = existingVideo.video_public_id;
 
     const isVideoReplaced =
@@ -280,7 +263,6 @@ app.put("/api/videos/:id", async (req, res) => {
       }
     }
 
-    // 7. Update video row in PostgreSQL
     const result = await pool.query(
       `
       UPDATE videos
@@ -313,7 +295,6 @@ app.put("/api/videos/:id", async (req, res) => {
 
     const row = result.rows[0];
 
-    // 8. Send updated video back to frontend
     const video = {
       id: row.id,
       title: row.title,
@@ -342,22 +323,16 @@ app.put("/api/videos/:id", async (req, res) => {
   }
 });
 
-
-
-
 // Delete one video from PostgreSQL by id
 app.delete("/api/videos/:id", async (req, res) => {
   try {
-    // Read the id from the URL
     const id = Number(req.params.id);
 
-    // Delete the row and return the deleted row
     const result = await pool.query(
       "DELETE FROM videos WHERE id = $1 RETURNING *",
       [id]
     );
 
-    // If nothing was deleted, that id does not exist
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Video not found" });
     }
@@ -366,6 +341,214 @@ app.delete("/api/videos/:id", async (req, res) => {
   } catch (error) {
     console.error("Database error while deleting video:", error);
     res.status(500).json({ message: "Failed to delete video" });
+  }
+});
+
+/* ==================================================
+   INTERNSHIP ROUTES
+   ================================================== */
+
+// GET all internships
+app.get("/api/internships", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        title,
+        company,
+        category,
+        type,
+        job_type,
+        location,
+        description,
+        deadline,
+        created_at
+      FROM internships
+      ORDER BY id DESC
+    `);
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching internships:", error);
+    res.status(500).json({ message: "Failed to fetch internships." });
+  }
+});
+
+// GET single internship by ID
+app.get("/api/internships/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        title,
+        company,
+        category,
+        type,
+        job_type,
+        location,
+        description,
+        deadline,
+        created_at
+      FROM internships
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Internship not found." });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching internship by ID:", error);
+    res.status(500).json({ message: "Failed to fetch internship details." });
+  }
+});
+
+// CREATE internship
+app.post("/api/internships", async (req, res) => {
+  try {
+    const {
+      title,
+      company,
+      category,
+      type,
+      job_type,
+      jobType,
+      location,
+      description,
+      deadline
+    } = req.body;
+
+    if (!title || !company) {
+      return res.status(400).json({ message: "Title and company are required." });
+    }
+
+    const resolvedType = type || job_type || jobType || null;
+    const resolvedJobType = job_type || jobType || type || null;
+
+    const result = await pool.query(
+      `
+      INSERT INTO internships (
+        title,
+        company,
+        category,
+        type,
+        job_type,
+        location,
+        description,
+        deadline
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+      `,
+      [
+        title,
+        company,
+        category || null,
+        resolvedType,
+        resolvedJobType,
+        location || null,
+        description || null,
+        deadline || null
+      ]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error creating internship:", error);
+    res.status(500).json({ message: "Failed to create internship." });
+  }
+});
+
+// UPDATE internship
+app.put("/api/internships/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title,
+      company,
+      category,
+      type,
+      job_type,
+      jobType,
+      location,
+      description,
+      deadline
+    } = req.body;
+
+    if (!title || !company) {
+      return res.status(400).json({ message: "Title and company are required." });
+    }
+
+    const resolvedType = type || job_type || jobType || null;
+    const resolvedJobType = job_type || jobType || type || null;
+
+    const result = await pool.query(
+      `
+      UPDATE internships
+      SET
+        title = $1,
+        company = $2,
+        category = $3,
+        type = $4,
+        job_type = $5,
+        location = $6,
+        description = $7,
+        deadline = $8
+      WHERE id = $9
+      RETURNING *
+      `,
+      [
+        title,
+        company,
+        category || null,
+        resolvedType,
+        resolvedJobType,
+        location || null,
+        description || null,
+        deadline || null,
+        id
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Internship not found." });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating internship:", error);
+    res.status(500).json({ message: "Failed to update internship." });
+  }
+});
+
+// DELETE internship
+app.delete("/api/internships/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `
+      DELETE FROM internships
+      WHERE id = $1
+      RETURNING *
+      `,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Internship not found." });
+    }
+
+    res.status(200).json({ message: "Internship deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting internship:", error);
+    res.status(500).json({ message: "Failed to delete internship." });
   }
 });
 
