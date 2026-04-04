@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 function Home() {
   const [videos, setVideos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("All Subjects");
   const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,9 +27,23 @@ function Home() {
     }
   };
 
-  const filteredVideos = videos.filter((video) =>
-    video.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Create a unique subject list for the subject filter dropdown
+  const subjectOptions = [
+    "All Subjects",
+    ...new Set(videos.map((video) => video.subject).filter(Boolean))
+  ];
+
+  // Filter videos by both search term and selected subject
+  const filteredVideos = videos.filter((video) => {
+    const matchesSearch = video.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const matchesSubject =
+      subjectFilter === "All Subjects" || video.subject === subjectFilter;
+
+    return matchesSearch && matchesSubject;
+  });
 
   const sortedVideos = [...filteredVideos].sort((a, b) => {
     if (sortOption === "title-asc") {
@@ -66,28 +81,53 @@ function Home() {
       </header>
 
       <div className="controls">
-        <input
-          type="text"
-          placeholder="Search videos by title..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
+        {/* Search videos by title */}
+        <div className="control-group search-group">
+          <label className="control-label">Search</label>
+          <input
+            type="text"
+            placeholder="Search videos by title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
 
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-          className="sort-select"
-        >
-          <option value="">Default Order</option>
-          <option value="title-asc">Title A-Z</option>
-          <option value="title-desc">Title Z-A</option>
-          <option value="views-asc">Views Low to High</option>
-          <option value="views-desc">Views High to Low</option>
-          <option value="date-newest">Newest First</option>
-          <option value="date-oldest">Oldest First</option>
-        </select>
+        {/* Subject filter dropdown with label */}
+        <div className="control-group">
+          <label className="control-label">Subject</label>
+          <select
+            value={subjectFilter}
+            onChange={(e) => setSubjectFilter(e.target.value)}
+            className="subject-select"
+          >
+            {subjectOptions.map((subject) => (
+              <option key={subject} value={subject}>
+                {subject}
+              </option>
+            ))}
+          </select>
+        </div>
 
+        {/* Sort dropdown with label */}
+        <div className="control-group">
+          <label className="control-label">Sort By</label>
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="sort-select"
+          >
+            <option value="">Default Order</option>
+            <option value="title-asc">Title A-Z</option>
+            <option value="title-desc">Title Z-A</option>
+            <option value="views-asc">Views Low to High</option>
+            <option value="views-desc">Views High to Low</option>
+            <option value="date-newest">Newest First</option>
+            <option value="date-oldest">Oldest First</option>
+          </select>
+        </div>
+
+        {/* Upload button for admin use */}
         <Link to="/upload" className="upload-link">
           + Upload New Video
         </Link>

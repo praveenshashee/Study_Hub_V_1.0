@@ -306,7 +306,6 @@ body {
    Used in: details page, upload/edit forms, materials
    ================================================== */
 .back-link,
-.upload-link,
 .edit-link,
 .material-link {
   display: inline-flex;
@@ -319,6 +318,20 @@ body {
   border-radius: var(--radius-sm);
   font-weight: 600;
   transition: background var(--transition), transform var(--transition);
+}
+
+.upload-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: white;
+  background: var(--accent);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+  align-self: flex-end;
 }
 
 .back-link:hover,
@@ -379,10 +392,27 @@ body {
   align-items: center;
 }
 
-.search-input {
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-left: 2px;
+}
+
+.search-group {
   flex: 1;
   min-width: 220px;
   max-width: 420px;
+}
+
+.search-input {
+  width: 100%;
   padding: 12px 16px;
   font-size: 0.95rem;
   border: 2px solid var(--border);
@@ -398,7 +428,9 @@ body {
   box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
 }
 
-.sort-select {
+/* Sort dropdown + subject filter dropdown on Home page */
+.sort-select,
+.subject-select {
   min-width: 220px;
   padding: 12px 16px;
   font-size: 0.95rem;
@@ -411,7 +443,8 @@ body {
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
-.sort-select:focus {
+.sort-select:focus,
+.subject-select:focus {
   border-color: var(--primary-light);
   box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
 }
@@ -793,7 +826,7 @@ body {
     min-width: 170px;
   }
 
-    .nav-right {
+  .nav-right {
     gap: 10px;
   }
 
@@ -802,7 +835,22 @@ body {
     height: 38px;
     font-size: 0.92rem;
   }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .subject-select,
+  .sort-select {
+    width: 100%;
+  }
+
+  .upload-link {
+    width: 100%;
+    align-self: stretch;
+  }
 }
+
 /* ==================================================
    INTERNSHIPS HOME PAGE
    Used in: pages/Internship/InternshipsHome.jsx
@@ -865,6 +913,7 @@ body {
   margin-top: 14px;
   min-width: 170px;
 }
+
 /* ==================================================
    INTERNSHIP ADD PAGE
    Used in: pages/Internship/AddInternshipPage.jsx
@@ -884,6 +933,7 @@ body {
   border-color: var(--primary-light);
   box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
 }
+
 /* ==================================================
    INTERNSHIP DETAILS PAGE
    Used in: pages/Internship/InternshipDetailsPage.jsx
@@ -939,6 +989,7 @@ body {
   gap: 12px;
   margin-top: 28px;
 }
+
 /* ==================================================
    INTERNSHIP UPDATE PAGE
    Used in: pages/Internship/UpdateInternshipPage.jsx
@@ -947,6 +998,7 @@ body {
   margin-bottom: 16px;
   text-align: center;
 }
+
 /* ==================================================
    INTERNSHIP DELETE PAGE
    Used in: pages/Internship/DeleteInternshipPage.jsx
