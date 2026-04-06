@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import session from "express-session";
+import bcrypt from "bcrypt";
 import express from "express";
 import cors from "cors";
 import pool from "./db.js";
@@ -9,8 +11,172 @@ import cloudinary from "./cloudinary.js";
 const app = express();
 const PORT = 5001;
 
-app.use(cors());
+// Middleware configuration
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
+// Parse JSON request bodies
 app.use(express.json());
+
+// Configure session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24
+  }
+}));
+
+// Debug route to check session data
+app.get("/api/auth/debug-session", (req, res) => {
+  res.json({
+    session: req.session,
+    user: req.session.user || null
+  });
+});
+
+// Middleware to check if user is authenticated
+function requireAuth(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+}
+
+// Middleware to check if user is an admin
+function requireAdmin(req, res, next) {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  next();
+}
+
+//sign-up route
+app.post("/api/auth/signup", async (req, res) => {
+  try {
+    const { fullName, email, password, role } = req.body;
+
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ message: "Email already in use" });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      `
+      INSERT INTO users (full_name, email, password_hash, role)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, full_name, email, role, created_at
+      `,
+      [
+        fullName,
+        email,
+        passwordHash,
+        "user"
+      ]
+    );
+
+    const user = result.rows[0];
+
+    req.session.user = {
+      id: user.id,
+      fullName: user.full_name,
+      email: user.email,
+      role: user.role
+    };
+
+    res.status(201).json({
+      message: "Signup successful",
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error("Signup error:", error);
+    res.status(500).json({ message: "Failed to sign up" });
+  }
+});
+
+//login route
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Missing email or password" });
+    }
+
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const user = result.rows[0];
+
+    const passwordMatches = await bcrypt.compare(password, user.password_hash);
+
+    if (!passwordMatches) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    req.session.user = {
+      id: user.id,
+      fullName: user.full_name,
+      email: user.email,
+      role: user.role
+    };
+
+    res.status(200).json({
+      message: "Login successful",
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Failed to log in" });
+  }
+});
+
+//logout route
+app.post("/api/auth/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).json({ message: "Failed to log out" });
+    }
+
+    res.clearCookie("connect.sid");
+    res.status(200).json({ message: "Logout successful" });
+  });
+});
+
+// Get current user route
+app.get("/api/auth/me", (req, res) => {
+  if (!req.session.user) {
+    return res.status(200).json({ user: null });
+  }
+
+  res.status(200).json({ user: req.session.user });
+});
+
+
+
 
 // Get all videos from PostgreSQL and map column names for frontend compatibility
 app.get("/api/videos", async (req, res) => {
@@ -115,7 +281,7 @@ app.patch("/api/videos/:id/view", async (req, res) => {
 });
 
 // Add a new video to PostgreSQL
-app.post("/api/videos", async (req, res) => {
+app.post("/api/videos", requireAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -203,7 +369,7 @@ app.post("/api/videos", async (req, res) => {
 });
 
 // Update an existing video in PostgreSQL
-app.put("/api/videos/:id", async (req, res) => {
+app.put("/api/videos/:id", requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
 
@@ -324,7 +490,7 @@ app.put("/api/videos/:id", async (req, res) => {
 });
 
 // Delete one video from PostgreSQL by id
-app.delete("/api/videos/:id", async (req, res) => {
+app.delete("/api/videos/:id", requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
 
@@ -410,7 +576,7 @@ app.get("/api/internships/:id", async (req, res) => {
 });
 
 // CREATE internship
-app.post("/api/internships", async (req, res) => {
+app.post("/api/internships", requireAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -466,7 +632,7 @@ app.post("/api/internships", async (req, res) => {
 });
 
 // UPDATE internship
-app.put("/api/internships/:id", async (req, res) => {
+app.put("/api/internships/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -528,7 +694,7 @@ app.put("/api/internships/:id", async (req, res) => {
 });
 
 // DELETE internship
-app.delete("/api/internships/:id", async (req, res) => {
+app.delete("/api/internships/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

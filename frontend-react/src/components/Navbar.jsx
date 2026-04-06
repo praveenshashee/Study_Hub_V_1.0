@@ -1,7 +1,7 @@
 import { NavLink, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 
-function Navbar({ theme, toggleTheme }) {
+function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const profileMenuRef = useRef(null);
 
@@ -50,36 +50,53 @@ function Navbar({ theme, toggleTheme }) {
                     {theme === "light" ? "🌙" : "☀️"}
                 </button>
 
-                <div className="profile-menu" ref={profileMenuRef}>
-                    <button
-                        type="button"
-                        className="profile-icon-btn"
-                        onClick={() => setMenuOpen((prev) => !prev)}
-                    >
-                        <span className="profile-avatar-circle">SH</span>
-                    </button>
+                {currentUser ? (
+                    <div className="profile-menu" ref={profileMenuRef}>
+                        <button
+                            type="button"
+                            className="profile-icon-btn"
+                            onClick={() => setMenuOpen((prev) => !prev)}
+                        >
+                            <span className="profile-avatar-circle">
+                                {currentUser.fullName
+                                    ? currentUser.fullName.slice(0, 2).toUpperCase()
+                                    : "SH"}
+                            </span>
+                        </button>
 
-                    {menuOpen && (
-                        <div className="profile-dropdown">
-                            <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
-                                My Profile
-                            </NavLink>
-                            <NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>
-                                Dashboard
-                            </NavLink>
-                            <button
-                                type="button"
-                                className="logout-btn"
-                                onClick={() => {
-                                    setMenuOpen(false);
-                                    alert("Logout action can be connected later.");
-                                }}
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        {menuOpen && (
+                            <div className="profile-dropdown">
+                                <div className="profile-dropdown-user">
+                                    <strong>{currentUser.fullName}</strong>
+                                    <span>{currentUser.role}</span>
+                                </div>
+
+                                <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
+                                    My Profile
+                                </NavLink>
+                                <NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>
+                                    Dashboard
+                                </NavLink>
+
+                                <button
+                                    type="button"
+                                    className="logout-btn"
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        onLogout();
+                                    }}
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="auth-nav-links">
+                        <NavLink to="/login">Login</NavLink>
+                        <NavLink to="/signup">Sign Up</NavLink>
+                    </div>
+                )}
             </div>
         </nav>
     );

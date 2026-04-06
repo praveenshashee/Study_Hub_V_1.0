@@ -4,7 +4,7 @@ import api from "../services/api.js";
 
 const recentViewTracker = {};
 
-function VideoDetails() {
+function VideoDetails({ currentUser, authLoading }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -131,15 +131,17 @@ function VideoDetails() {
         </ul>
       </div>
 
-      <div className="page-actions">
-        <Link to={`/edit/${video.id}`} className="edit-link">
-          Edit Video
-        </Link>
+      {!authLoading && currentUser?.role === "admin" && (
+        <div className="page-actions">
+          <Link to={`/edit/${video.id}`} className="edit-link">
+            Edit Video
+          </Link>
 
-        <button onClick={handleDelete} className="delete-button">
-          Delete Video
-        </button>
-      </div>
+          <button onClick={handleDelete} className="delete-button">
+            Delete Video
+          </button>
+        </div>
+      )}
     </div>
   );
 }
