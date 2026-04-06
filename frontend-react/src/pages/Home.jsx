@@ -3,7 +3,7 @@ import api from "../services/api.js";
 import VideoCard from "../components/VideoCard";
 import { Link } from "react-router-dom";
 
-function Home() {
+function Home({ currentUser, authLoading }) {
   const [videos, setVideos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("All Subjects");
@@ -127,10 +127,12 @@ function Home() {
           </select>
         </div>
 
-        {/* Upload button for admin use */}
-        <Link to="/upload" className="upload-link">
-          + Upload New Video
-        </Link>
+        {/* Upload button for admin use only */}
+        {!authLoading && currentUser?.role === "admin" && (
+          <Link to="/upload" className="upload-link">
+            + Upload New Video
+          </Link>
+        )}
       </div>
 
       {loading && <p>Loading videos...</p>}
