@@ -701,6 +701,60 @@ body {
   font-style: italic;
 }
 
+/* Rating section on Video Details page */
+.rating-section {
+  margin-top: 28px;
+  padding: 20px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+}
+
+.rating-section h2 {
+  margin: 0 0 8px;
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.star-rating-row {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 10px;
+  flex-wrap: wrap;
+}
+
+.star-btn {
+  border: none;
+  background: transparent;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #cbd5e1;
+  transition: transform var(--transition), color var(--transition);
+}
+
+.star-btn:hover {
+  transform: translateY(-1px) scale(1.06);
+  color: #f59e0b;
+}
+
+.star-btn.active {
+  color: #f59e0b;
+}
+
+.star-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.user-rating-text {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
 /* ==================================================
    UPLOAD PAGE + EDIT PAGE
    Used in: UploadVideo.jsx, EditVideo.jsx
@@ -962,6 +1016,10 @@ body {
 
   .profile-dropdown {
     min-width: 180px;
+  }
+
+  .star-btn {
+    font-size: 1.8rem;
   }
 }
 
