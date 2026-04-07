@@ -40,47 +40,49 @@ function Login() {
     };
 
     return (
-        <div className="auth-page-container">
-            <Link to="/" className="back-link">← Back to Home</Link>
+        <div className="auth-page-shell">
+            <div className="auth-card">
+                <Link to="/" className="back-link auth-back-link">← Back to Home</Link>
 
-            <header className="page-header form-header">
-                <h1>Login</h1>
-                <p>Log in to continue using Study Hub.</p>
-            </header>
+                <header className="auth-header">
+                    <h1>Welcome Back</h1>
+                    <p>Log in to continue using Study Hub.</p>
+                </header>
 
-            <form onSubmit={handleSubmit} className="video-form auth-form">
-                <label>Email</label>
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <label>Password</label>
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <button type="submit">Login</button>
-            </form>
+                    <button type="submit">Login</button>
+                </form>
 
-            {successMessage && <p className="success-text">{successMessage}</p>}
-            {error && <p className="error-text">{error}</p>}
+                {successMessage && <p className="success-text">{successMessage}</p>}
+                {error && <p className="error-text">{error}</p>}
 
-            <p className="auth-switch-text">
-                Don’t have an account?{" "}
-                <Link to="/signup" className="auth-inline-link">
-                    Create one
-                </Link>
-            </p>
+                <p className="auth-switch-text">
+                    Don’t have an account?{" "}
+                    <Link to="/signup" className="auth-inline-link">
+                        Create one
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }

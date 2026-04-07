@@ -12,9 +12,21 @@ function VideoDetails({ currentUser, authLoading }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [userRating, setUserRating] = useState(null);
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [ratingMessage, setRatingMessage] = useState("");
+
   useEffect(() => {
     loadVideo();
   }, [id]);
+
+  useEffect(() => {
+    if (!authLoading && currentUser?.role === "user") {
+      loadUserRating();
+    } else {
+      setUserRating(null);
+    }
+  }, [id, currentUser, authLoading]);
 
   const loadVideo = async () => {
     setLoading(true);
@@ -43,6 +55,39 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
+ // Load the current user's rating for this video (if any)
+  const loadUserRating = async () => {
+    try {
+      const response = await api.get(`/api/videos/${id}/my-rating`);
+      setUserRating(response.data.ratingValue);
+    } catch (err) {
+      console.error("Failed to load user rating:", err);
+      setUserRating(null);
+    }
+  };
+
+  // Handle user rating submission
+  const handleRateVideo = async (selectedRating) => {
+    setRatingLoading(true);
+    setRatingMessage("");
+
+    try {
+      const response = await api.post(`/api/videos/${id}/rate`, {
+        ratingValue: selectedRating
+      });
+
+      setUserRating(selectedRating);
+      setVideo(response.data.video);
+      setRatingMessage("Rating submitted successfully");
+    } catch (err) {
+      console.error("Failed to submit rating:", err);
+      setRatingMessage(err.response?.data?.message || "Failed to submit rating");
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
+ // Handle video deletion (admin only)
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this video?");
 
@@ -95,6 +140,46 @@ function VideoDetails({ currentUser, authLoading }) {
           Your browser does not support the video tag.
         </video>
       </div>
+
+      // Show rating section only for regular users (not admins) and when auth is done loading
+      {!authLoading && currentUser?.role === "user" && (
+        <div className="rating-section">
+          <h2>Rate This Video</h2>
+          <p className="section-help">
+            Click a star to rate this video from 1 to 5.
+          </p>
+
+          <div className="star-rating-row">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                className={`star-btn ${userRating >= star ? "active" : ""}`}
+                onClick={() => handleRateVideo(star)}
+                disabled={ratingLoading}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+
+          <p className="user-rating-text">
+            Your rating: {userRating ? `${userRating}/5` : "Not rated yet"}
+          </p>
+
+          {ratingMessage && (
+            <p
+              className={
+                ratingMessage.toLowerCase().includes("success")
+                  ? "success-text"
+                  : "error-text"
+              }
+            >
+              {ratingMessage}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="materials-section">
         <h2>Materials</h2>

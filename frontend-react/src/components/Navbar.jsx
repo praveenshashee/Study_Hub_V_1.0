@@ -16,10 +16,15 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
         };
 
         document.addEventListener("mousedown", handleClickOutside);
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const avatarText = currentUser?.fullName
+        ? currentUser.fullName.slice(0, 2).toUpperCase()
+        : "GU";
 
     return (
         <nav className="navbar">
@@ -50,53 +55,69 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
                     {theme === "light" ? "🌙" : "☀️"}
                 </button>
 
-                {currentUser ? (
-                    <div className="profile-menu" ref={profileMenuRef}>
-                        <button
-                            type="button"
-                            className="profile-icon-btn"
-                            onClick={() => setMenuOpen((prev) => !prev)}
+                <div className="profile-menu" ref={profileMenuRef}>
+                    <button
+                        type="button"
+                        className="profile-icon-btn"
+                        onClick={() => setMenuOpen((prev) => !prev)}
+                    >
+                        <span
+                            className={`profile-avatar-circle ${currentUser ? "" : "guest-avatar"}`}
                         >
-                            <span className="profile-avatar-circle">
-                                {currentUser.fullName
-                                    ? currentUser.fullName.slice(0, 2).toUpperCase()
-                                    : "SH"}
-                            </span>
-                        </button>
+                            {avatarText}
+                        </span>
+                    </button>
 
-                        {menuOpen && (
-                            <div className="profile-dropdown">
-                                <div className="profile-dropdown-user">
-                                    <strong>{currentUser.fullName}</strong>
-                                    <span>{currentUser.role}</span>
+                    {menuOpen && (
+                        <div className="profile-dropdown">
+                            <div className="profile-dropdown-header">
+                                <div
+                                    className={`profile-dropdown-avatar ${currentUser ? "" : "guest-avatar"}`}
+                                >
+                                    {avatarText}
                                 </div>
 
-                                <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
-                                    My Profile
-                                </NavLink>
-                                <NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>
-                                    Dashboard
-                                </NavLink>
-
-                                <button
-                                    type="button"
-                                    className="logout-btn"
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                        onLogout();
-                                    }}
-                                >
-                                    Logout
-                                </button>
+                                <div className="profile-dropdown-user">
+                                    <strong>{currentUser ? currentUser.fullName : "Guest User"}</strong>
+                                    <span>
+                                        {currentUser ? currentUser.role : "Not logged in"}
+                                    </span>
+                                </div>
                             </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="auth-nav-links">
-                        <NavLink to="/login">Login</NavLink>
-                        <NavLink to="/signup">Sign Up</NavLink>
-                    </div>
-                )}
+
+                            {currentUser ? (
+                                <>
+                                    <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
+                                        My Profile
+                                    </NavLink>
+                                    <NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>
+                                        Dashboard
+                                    </NavLink>
+
+                                    <button
+                                        type="button"
+                                        className="logout-btn"
+                                        onClick={() => {
+                                            setMenuOpen(false);
+                                            onLogout();
+                                        }}
+                                    >
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <NavLink to="/login" onClick={() => setMenuOpen(false)}>
+                                        Login
+                                    </NavLink>
+                                    <NavLink to="/signup" onClick={() => setMenuOpen(false)}>
+                                        Sign Up
+                                    </NavLink>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </nav>
     );

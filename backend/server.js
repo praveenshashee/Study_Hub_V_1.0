@@ -41,6 +41,12 @@ app.get("/api/auth/debug-session", (req, res) => {
   });
 });
 
+
+
+/* ==================================================
+   Authentification and Authorization Middleware for Admins & Users
+   ================================================== */
+
 // Middleware to check if user is authenticated
 function requireAuth(req, res, next) {
   if (!req.session.user) {
@@ -56,6 +62,12 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
+
+
+
+/* ==================================================
+   Sign-up, Login, Logout
+   ================================================== */
 
 //sign-up route
 app.post("/api/auth/signup", async (req, res) => {
@@ -176,7 +188,124 @@ app.get("/api/auth/me", (req, res) => {
 });
 
 
+/* ==================================================
+   Rating Routes for Videos
+   ================================================== */
 
+// Rate a video (create or update rating)
+app.post("/api/videos/:id/rate", requireAuth, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+    const userId = req.session.user.id;
+    const { ratingValue } = req.body;
+
+    if (!ratingValue || ratingValue < 1 || ratingValue > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    }
+
+    const videoCheck = await pool.query(
+      "SELECT * FROM videos WHERE id = $1",
+      [videoId]
+    );
+
+    if (videoCheck.rows.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO video_ratings (user_id, video_id, rating_value, updated_at)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+      ON CONFLICT (user_id, video_id)
+      DO UPDATE
+      SET
+        rating_value = EXCLUDED.rating_value,
+        updated_at = CURRENT_TIMESTAMP
+      `,
+      [userId, videoId, ratingValue]
+    );
+
+    const averageResult = await pool.query(
+      `
+      SELECT ROUND(AVG(rating_value)::numeric, 1) AS average_rating
+      FROM video_ratings
+      WHERE video_id = $1
+      `,
+      [videoId]
+    );
+
+    const averageRating = averageResult.rows[0].average_rating || 0;
+
+    const updatedVideoResult = await pool.query(
+      `
+      UPDATE videos
+      SET rating = $1
+      WHERE id = $2
+      RETURNING *
+      `,
+      [averageRating, videoId]
+    );
+
+    const row = updatedVideoResult.rows[0];
+
+    res.status(200).json({
+      message: "Rating submitted successfully",
+      video: {
+        id: row.id,
+        title: row.title,
+        subject: row.subject,
+        description: row.description,
+        videoUrl: row.video_url,
+        thumbnailUrl: row.thumbnail_url,
+        videoPublicId: row.video_public_id,
+        uploader: row.uploader_name,
+        views: row.view_count,
+        rating: Number(row.rating),
+        createdAt: row.created_at,
+        materials: {
+          labSheet: row.labsheet_url,
+          modelPaper: row.modelpaper_url
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error submitting rating:", error);
+    res.status(500).json({ message: "Failed to submit rating" });
+  }
+});
+
+// Get the current user's rating for a specific video
+app.get("/api/videos/:id/my-rating", requireAuth, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+    const userId = req.session.user.id;
+
+    const result = await pool.query(
+      `
+      SELECT rating_value
+      FROM video_ratings
+      WHERE user_id = $1 AND video_id = $2
+      `,
+      [userId, videoId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(200).json({ ratingValue: null });
+    }
+
+    res.status(200).json({
+      ratingValue: Number(result.rows[0].rating_value)
+    });
+  } catch (error) {
+    console.error("Error fetching user rating:", error);
+    res.status(500).json({ message: "Failed to fetch user rating" });
+  }
+});
+
+
+/* ==================================================
+    Video Routes (CRUD) with PostgreSQL
+   ================================================== */
 
 // Get all videos from PostgreSQL and map column names for frontend compatibility
 app.get("/api/videos", async (req, res) => {

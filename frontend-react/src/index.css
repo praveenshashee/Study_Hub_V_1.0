@@ -109,6 +109,134 @@ body {
   min-height: 100vh;
 }
 
+
+/* ==================================================
+   MOBILE RESPONSIVE
+   ================================================== */
+@media (max-width: 640px) {
+
+  /* Navbar */
+  .navbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .navbar .nav-brand {
+    font-size: 1.08rem;
+  }
+
+  .nav-center-links {
+    gap: 4px;
+  }
+
+  .nav-center-links a {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+
+  .nav-right {
+    gap: 10px;
+  }
+
+  .theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.92rem;
+  }
+
+  .profile-avatar-circle,
+  .profile-dropdown-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .profile-dropdown {
+    width: 220px;
+    right: 0;
+  }
+
+  /* Shared page headers/layout */
+  .page-header {
+    padding: 28px 16px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 1.55rem;
+  }
+
+  .home-container,
+  .details-container,
+  .form-page-container {
+    padding: 20px 16px 32px;
+  }
+
+  /* Home page */
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 16px;
+  }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .subject-select,
+  .sort-select {
+    width: 100%;
+  }
+
+  .upload-link {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .video-list {
+    grid-template-columns: 1fr;
+  }
+
+  /* Page action buttons */
+  .page-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .back-link,
+  .upload-link,
+  .edit-link,
+  .delete-button,
+  .material-link {
+    width: 100%;
+  }
+
+  .video-form button {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  /* Auth pages */
+  .auth-page-shell {
+    padding: 20px 16px;
+    min-height: calc(100vh - 56px);
+  }
+
+  .auth-card {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.55rem;
+  }
+
+  /* Rating stars */
+  .star-btn {
+    font-size: 1.8rem;
+  }
+}
+
+
 /* ==================================================
    NAVBAR - ALL PAGES
    Used in: Navbar.jsx
@@ -157,7 +285,7 @@ body {
   color: #fff;
 }
 
-/* Right side of navbar */
+/* Right side */
 .nav-right {
   display: flex;
   align-items: center;
@@ -185,30 +313,7 @@ body {
   transform: translateY(-1px);
 }
 
-/* Login / Signup links when user is logged out */
-.auth-nav-links {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.auth-nav-links a {
-  color: rgba(255, 255, 255, 0.88);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.92rem;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition), color var(--transition);
-}
-
-.auth-nav-links a:hover,
-.auth-nav-links a.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-/* Profile dropdown when user is logged in */
+/* Profile / guest dropdown */
 .profile-menu {
   position: relative;
 }
@@ -220,7 +325,8 @@ body {
   padding: 0;
 }
 
-.profile-avatar-circle {
+.profile-avatar-circle,
+.profile-dropdown-avatar {
   width: 42px;
   height: 42px;
   border-radius: 999px;
@@ -232,7 +338,10 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition);
+}
+
+.guest-avatar {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
 }
 
 .profile-icon-btn:hover .profile-avatar-circle {
@@ -243,7 +352,7 @@ body {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  min-width: 210px;
+  width: 250px;
   background: var(--card-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -255,18 +364,26 @@ body {
   z-index: 200;
 }
 
-.profile-dropdown-user {
-  padding: 10px 12px;
+.profile-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 14px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 4px;
+}
+
+.profile-dropdown-user {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .profile-dropdown-user strong {
   color: var(--text);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
 }
 
 .profile-dropdown-user span {
@@ -302,28 +419,113 @@ body {
 }
 
 /* ==================================================
-   AUTH LINKS IN NAVBAR
+   AUTH PAGES
+   Used in: Login.jsx, Signup.jsx
    ================================================== */
-.auth-nav-links {
+
+.auth-page-shell {
+  min-height: calc(100vh - 64px);
   display: flex;
-  gap: 8px;
   align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
 }
 
-.auth-nav-links a {
-  color: rgba(255, 255, 255, 0.88);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.92rem;
-  padding: 8px 16px;
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 22px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(6px);
+  padding: 28px;
+}
+
+.auth-back-link {
+  margin-bottom: 18px;
+}
+
+.auth-header {
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.auth-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.85rem;
+  color: var(--primary);
+}
+
+.auth-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.96rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-form label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 0.96rem;
   border-radius: var(--radius-sm);
-  transition: background var(--transition), color var(--transition);
+  border: 2px solid var(--border);
+  background: var(--card-solid);
+  outline: none;
+  font-family: inherit;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
-.auth-nav-links a:hover,
-.auth-nav-links a.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+.auth-form input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
+}
+
+.auth-form button {
+  margin-top: 6px;
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: white;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.auth-form button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.auth-switch-text {
+  margin-top: 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.auth-inline-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-inline-link:hover {
+  text-decoration: underline;
 }
 
 /* ==================================================
@@ -701,6 +903,60 @@ body {
   font-style: italic;
 }
 
+/* Rating section on Video Details page */
+.rating-section {
+  margin-top: 28px;
+  padding: 20px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+}
+
+.rating-section h2 {
+  margin: 0 0 8px;
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.star-rating-row {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 10px;
+  flex-wrap: wrap;
+}
+
+.star-btn {
+  border: none;
+  background: transparent;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #cbd5e1;
+  transition: transform var(--transition), color var(--transition);
+}
+
+.star-btn:hover {
+  transform: translateY(-1px) scale(1.06);
+  color: #f59e0b;
+}
+
+.star-btn.active {
+  color: #f59e0b;
+}
+
+.star-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.user-rating-text {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
 /* ==================================================
    UPLOAD PAGE + EDIT PAGE
    Used in: UploadVideo.jsx, EditVideo.jsx
@@ -816,153 +1072,6 @@ body {
   color: var(--error);
   margin-top: 16px;
   font-weight: 600;
-}
-
-/* ==================================================
-   MOBILE RESPONSIVE
-   ================================================== */
-@media (max-width: 640px) {
-  .navbar {
-    padding: 0 16px;
-    height: 56px;
-  }
-
-  .navbar .nav-brand {
-    font-size: 1.08rem;
-  }
-
-  .navbar .nav-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .page-header {
-    padding: 28px 16px 16px;
-  }
-
-  .page-header h1 {
-    font-size: 1.55rem;
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0 16px;
-  }
-
-  .home-container,
-  .details-container,
-  .form-page-container {
-    padding: 20px 16px 32px;
-  }
-
-  .video-list {
-    grid-template-columns: 1fr;
-  }
-
-  .page-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .back-link,
-  .upload-link,
-  .edit-link,
-  .delete-button,
-  .material-link {
-    width: 100%;
-  }
-
-  .video-form button {
-    width: 100%;
-    align-self: stretch;
-  }
-
-  .nav-center-links {
-    gap: 4px;
-  }
-
-  .nav-center-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .profile-avatar-circle {
-    width: 38px;
-    height: 38px;
-    font-size: 0.82rem;
-  }
-
-  .profile-dropdown {
-    right: 0;
-    min-width: 170px;
-  }
-
-  .nav-right {
-    gap: 10px;
-  }
-
-  .theme-toggle-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 0.92rem;
-  }
-
-  .control-group {
-    width: 100%;
-  }
-
-  .subject-select,
-  .sort-select {
-    width: 100%;
-  }
-
-  .upload-link {
-    width: 100%;
-    align-self: stretch;
-  }
-
-  .auth-nav-links {
-    gap: 4px;
-  }
-
-  .auth-nav-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .auth-page-container {
-    padding: 20px 16px 32px;
-  }
-
-  .nav-right {
-    gap: 10px;
-  }
-
-  .theme-toggle-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 0.92rem;
-  }
-
-  .auth-nav-links {
-    gap: 4px;
-  }
-
-  .auth-nav-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .profile-avatar-circle {
-    width: 38px;
-    height: 38px;
-    font-size: 0.82rem;
-  }
-
-  .profile-dropdown {
-    min-width: 180px;
-  }
 }
 
 /* ==================================================
