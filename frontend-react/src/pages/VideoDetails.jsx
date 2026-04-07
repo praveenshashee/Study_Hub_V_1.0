@@ -55,7 +55,7 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
- // Load the current user's rating for this video (if any)
+  // Load the current user's rating for this video (if any)
   const loadUserRating = async () => {
     try {
       const response = await api.get(`/api/videos/${id}/my-rating`);
@@ -87,7 +87,7 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
- // Handle video deletion (admin only)
+  // Handle video deletion (admin only)
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this video?");
 
@@ -141,7 +141,6 @@ function VideoDetails({ currentUser, authLoading }) {
         </video>
       </div>
 
-      // Show rating section only for regular users (not admins) and when auth is done loading
       {!authLoading && currentUser?.role === "user" && (
         <div className="rating-section">
           <h2>Rate This Video</h2>
