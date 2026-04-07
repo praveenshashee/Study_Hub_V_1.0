@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
 
-function InternshipsHome() {
+function InternshipsHome({ currentUser }) {
   const [internships, setInternships] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -80,28 +80,35 @@ function InternshipsHome() {
         </select>
 
         <div className="internships-action-links">
-          <div className="internships-action-links">
-            <Link to="/internships/add" className="upload-link internships-add-link">
-              + Add Internship
-            </Link>
+          {currentUser?.role === "admin" ? (
+            <>
+              <Link to="/internships/add" className="upload-link internships-add-link">
+                + Add Internship
+              </Link>
 
-            <Link to="/internships/notify" className="upload-link internships-notify-link">
+              <Link
+                to="/internships/notifications"
+                className="upload-link internships-notification-link"
+              >
+                Intern Notification
+              </Link>
+            </>
+          ) : (
+            <Link
+              to="/internships/notify"
+              className="upload-link internships-notify-link"
+            >
               Notify Intern
             </Link>
-
-            <Link
-              to="/internships/notifications"
-              className="upload-link internships-notification-link"
-            >
-              Intern Notification
-            </Link>
-          </div>
+          )}
         </div>
       </div>
 
       {loading && <p className="page-message">Loading internships...</p>}
 
-      {!loading && error && <p className="error-text internships-feedback">{error}</p>}
+      {!loading && error && (
+        <p className="error-text internships-feedback">{error}</p>
+      )}
 
       {!loading && !error && filteredInternships.length === 0 && (
         <p className="page-message">No internships found.</p>
