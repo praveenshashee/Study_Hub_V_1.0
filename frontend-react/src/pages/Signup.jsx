@@ -41,57 +41,59 @@ function Signup() {
     };
 
     return (
-        <div className="auth-page-container">
-            <Link to="/" className="back-link">← Back to Home</Link>
+        <div className="auth-page-shell">
+            <div className="auth-card">
+                <Link to="/" className="back-link auth-back-link">← Back to Home</Link>
 
-            <header className="page-header form-header">
-                <h1>Create Account</h1>
-                <p>Sign up to access Study Hub as a user.</p>
-            </header>
+                <header className="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Sign up to access Study Hub as a user.</p>
+                </header>
 
-            <form onSubmit={handleSubmit} className="video-form auth-form">
-                <label>Full Name</label>
-                <input
-                    type="text"
-                    name="fullName"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                />
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <label>Full Name</label>
+                    <input
+                        type="text"
+                        name="fullName"
+                        placeholder="Enter your full name"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <label>Email</label>
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <label>Password</label>
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <button type="submit">Sign Up</button>
-            </form>
+                    <button type="submit">Sign Up</button>
+                </form>
 
-            {successMessage && <p className="success-text">{successMessage}</p>}
-            {error && <p className="error-text">{error}</p>}
+                {successMessage && <p className="success-text">{successMessage}</p>}
+                {error && <p className="error-text">{error}</p>}
 
-            <p className="auth-switch-text">
-                Already have an account?{" "}
-                <Link to="/login" className="auth-inline-link">
-                    Log in
-                </Link>
-            </p>
+                <p className="auth-switch-text">
+                    Already have an account?{" "}
+                    <Link to="/login" className="auth-inline-link">
+                        Log in
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }

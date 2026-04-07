@@ -327,6 +327,116 @@ body {
 }
 
 /* ==================================================
+   AUTH PAGES
+   Used in: Login.jsx, Signup.jsx
+   ================================================== */
+
+.auth-page-shell {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 22px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(6px);
+  padding: 28px;
+}
+
+.auth-back-link {
+  margin-bottom: 18px;
+}
+
+.auth-header {
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.auth-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.85rem;
+  color: var(--primary);
+}
+
+.auth-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.96rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-form label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 0.96rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--card-solid);
+  outline: none;
+  font-family: inherit;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.auth-form input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
+}
+
+.auth-form button {
+  margin-top: 6px;
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: white;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.auth-form button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.auth-switch-text {
+  margin-top: 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.auth-inline-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-inline-link:hover {
+  text-decoration: underline;
+}
+
+/* ==================================================
    SHARED PAGE LAYOUT
    Used in: Home, VideoDetails, UploadVideo, EditVideo
    ================================================== */
@@ -1006,6 +1116,20 @@ body {
   .auth-nav-links a {
     padding: 6px 10px;
     font-size: 0.82rem;
+  }
+
+  .auth-page-shell {
+    padding: 20px 16px;
+    min-height: calc(100vh - 56px);
+  }
+
+  .auth-card {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.55rem;
   }
 
   .profile-avatar-circle {
