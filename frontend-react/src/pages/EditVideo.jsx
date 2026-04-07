@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../services/api.js";
 import CloudinaryUploadButton from "../components/CloudinaryUploadButton";
+import { buildCloudinaryThumbnailUrl } from "../utils/cloudinary.js";
 
 function EditVideo() {
   const { id } = useParams();
@@ -24,32 +25,32 @@ function EditVideo() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        const response = await api.get(`/api/videos/${id}`);
+        const video = response.data;
+
+        setFormData({
+          title: video.title || "",
+          subject: video.subject || "",
+          description: video.description || "",
+          videoUrl: video.videoUrl || "",
+          thumbnailUrl: video.thumbnailUrl || "",
+          videoPublicId: video.videoPublicId || "",
+          labSheetUrl: video.materials?.labSheet || "",
+          modelPaperUrl: video.materials?.modelPaper || "",
+          uploader: video.uploader || ""
+        });
+      } catch (err) {
+        console.error("Failed to fetch video for editing:", err);
+        setError("Failed to load video data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchVideo();
   }, [id]);
-
-  const fetchVideo = async () => {
-    try {
-      const response = await api.get(`/api/videos/${id}`);
-      const video = response.data;
-
-      setFormData({
-        title: video.title || "",
-        subject: video.subject || "",
-        description: video.description || "",
-        videoUrl: video.videoUrl || "",
-        thumbnailUrl: video.thumbnailUrl || "",
-        videoPublicId: video.videoPublicId || "",
-        labSheetUrl: video.materials?.labSheet || "",
-        modelPaperUrl: video.materials?.modelPaper || "",
-        uploader: video.uploader || ""
-      });
-    } catch (err) {
-      console.error("Failed to fetch video for editing:", err);
-      setError("Failed to load video data");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({
@@ -59,8 +60,9 @@ function EditVideo() {
   };
 
   const handleVideoUploadSuccess = useCallback((uploadedVideo) => {
-    const generatedThumbnailUrl =
-      `https://res.cloudinary.com/de9xr5nq4/video/upload/so_1/${uploadedVideo.public_id}.jpg`;
+    const generatedThumbnailUrl = buildCloudinaryThumbnailUrl(
+      uploadedVideo.public_id
+    );
 
     setFormData((prev) => ({
       ...prev,
@@ -141,6 +143,11 @@ function EditVideo() {
 
           <label>Replace Video</label>
           <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
+          <p className="section-help">
+            Set <code>VITE_CLOUDINARY_CLOUD_NAME</code> and{" "}
+            <code>VITE_CLOUDINARY_UPLOAD_PRESET</code> in{" "}
+            <code>frontend-react/.env</code> to enable uploads.
+          </p>
 
           <label>Video URL</label>
           <input

@@ -9,26 +9,26 @@ function InternshipDetailsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const fetchInternshipDetails = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await api.get(`/api/internships/${id}`);
+        setInternship(response.data || null);
+      } catch (err) {
+        console.error("Error fetching internship details:", err);
+        const backendMessage =
+          err?.response?.data?.message || "Could not load internship details.";
+        setError(backendMessage);
+        setInternship(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchInternshipDetails();
   }, [id]);
-
-  const fetchInternshipDetails = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await api.get(`/api/internships/${id}`);
-      setInternship(response.data || null);
-    } catch (err) {
-      console.error("Error fetching internship details:", err);
-      const backendMessage =
-        err?.response?.data?.message || "Could not load internship details.";
-      setError(backendMessage);
-      setInternship(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

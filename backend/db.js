@@ -1,18 +1,25 @@
-// Import the Pool class from the pg package
-// Pool is used to manage PostgreSQL connections more efficiently
+import dotenv from "dotenv";
 import pg from "pg";
+
+dotenv.config();
 
 const { Pool } = pg;
 
-// Create a connection pool
-// Replace the password and database name with your own PostgreSQL details
-const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "StudyHub",
-  password: "root",
-  port: 5432
-});
+const isSslEnabled = process.env.DB_SSL === "true";
+const ssl = isSslEnabled ? { rejectUnauthorized: false } : undefined;
 
-// Export the pool so we can use it in server.js
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl
+    })
+  : new Pool({
+      user: process.env.DB_USER || "postgres",
+      host: process.env.DB_HOST || "localhost",
+      database: process.env.DB_NAME || "StudyHub",
+      password: process.env.DB_PASSWORD || "root",
+      port: Number(process.env.DB_PORT || 5432),
+      ssl
+    });
+
 export default pool;

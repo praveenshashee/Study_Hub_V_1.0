@@ -1,47 +1,52 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
+import BookmarkButton from "../components/BookmarkButton.jsx";
+import usePersonalization from "../hooks/usePersonalization.js";
+import { recordRecentlyViewedVideo } from "../utils/personalization.js";
 
 const recentViewTracker = {};
 
 function VideoDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isBookmarked, toggleBookmark } = usePersonalization();
 
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const loadVideo = async () => {
+      setLoading(true);
+      setError("");
+
+      const now = Date.now();
+      const lastViewTime = recentViewTracker[id];
+
+      try {
+        let response;
+
+        // Skip only very recent duplicate calls (like React StrictMode dev remount)
+        if (lastViewTime && now - lastViewTime < 500) {
+          response = await api.get(`/api/videos/${id}`);
+        } else {
+          recentViewTracker[id] = now;
+          response = await api.patch(`/api/videos/${id}/view`);
+        }
+
+        setVideo(response.data);
+        recordRecentlyViewedVideo(response.data.id);
+      } catch (err) {
+        console.error("Failed to load video details:", err);
+        setError("Failed to load video details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadVideo();
   }, [id]);
-
-  const loadVideo = async () => {
-    setLoading(true);
-    setError("");
-
-    const now = Date.now();
-    const lastViewTime = recentViewTracker[id];
-
-    try {
-      let response;
-
-      // Skip only very recent duplicate calls (like React StrictMode dev remount)
-      if (lastViewTime && now - lastViewTime < 500) {
-        response = await api.get(`/api/videos/${id}`);
-      } else {
-        recentViewTracker[id] = now;
-        response = await api.patch(`/api/videos/${id}/view`);
-      }
-
-      setVideo(response.data);
-    } catch (err) {
-      console.error("Failed to load video details:", err);
-      setError("Failed to load video details");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this video?");
@@ -73,7 +78,7 @@ function VideoDetails() {
 
   return (
     <div className="details-container">
-      <Link to="/" className="back-link">← Back to Home</Link>
+      <Link to="/" className="back-link">&lt; Back to Home</Link>
 
       <h1>{video.title}</h1>
       <p><strong>Subject:</strong> {video.subject}</p>
@@ -132,6 +137,12 @@ function VideoDetails() {
       </div>
 
       <div className="page-actions">
+        <BookmarkButton
+          variant="inline"
+          isBookmarked={isBookmarked(video.id)}
+          onToggle={() => toggleBookmark(video.id)}
+        />
+
         <Link to={`/edit/${video.id}`} className="edit-link">
           Edit Video
         </Link>

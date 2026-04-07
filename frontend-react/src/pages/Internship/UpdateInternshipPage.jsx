@@ -22,37 +22,37 @@ function UpdateInternshipPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    const fetchInternship = async () => {
+      try {
+        setLoading(true);
+        setErrorMessage("");
+
+        const response = await api.get(`/api/internships/${id}`);
+        const internship = response.data || {};
+
+        setFormData({
+          title: internship.title || "",
+          company: internship.company || "",
+          location: internship.location || "",
+          category: internship.category || "IT",
+          jobType: internship.type || internship.jobType || "Full time",
+          description: internship.description || "",
+          deadline: internship.deadline
+            ? new Date(internship.deadline).toISOString().split("T")[0]
+            : "",
+        });
+      } catch (err) {
+        console.error("Error loading internship:", err);
+        const backendMessage =
+          err?.response?.data?.message || "Could not load internship for editing.";
+        setErrorMessage(backendMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchInternship();
   }, [id]);
-
-  const fetchInternship = async () => {
-    try {
-      setLoading(true);
-      setErrorMessage("");
-
-      const response = await api.get(`/api/internships/${id}`);
-      const internship = response.data || {};
-
-      setFormData({
-        title: internship.title || "",
-        company: internship.company || "",
-        location: internship.location || "",
-        category: internship.category || "IT",
-        jobType: internship.type || internship.jobType || "Full time",
-        description: internship.description || "",
-        deadline: internship.deadline
-          ? new Date(internship.deadline).toISOString().split("T")[0]
-          : "",
-      });
-    } catch (err) {
-      console.error("Error loading internship:", err);
-      const backendMessage =
-        err?.response?.data?.message || "Could not load internship for editing.";
-      setErrorMessage(backendMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (e) => {
     const { id, value } = e.target;

@@ -1,110 +1,83 @@
 # StudyHub Project
 
-## Overview
+StudyHub is a student support platform for academic videos, study materials, and internship listings. The active stack is a React frontend in `frontend-react/` and an Express/PostgreSQL backend in `backend/`.
 
-StudyHub is a student support platform built to help students access academic video content and related study materials in one place.
+## Stack
 
-This current implementation includes a React-based frontend for the video module, an Express backend, PostgreSQL database integration, Cloudinary video hosting, and Google Drive links for supporting study documents.
+- Frontend: React, Vite, React Router, Axios
+- Backend: Node.js, Express, PostgreSQL, Cloudinary
+- Storage: Cloudinary for video assets, Google Drive links for study documents
 
----
+## Project Structure
 
-## Current Project Structure
+- `frontend-react/`: current frontend
+- `backend/`: API server and PostgreSQL access
+- `old-frontend/`: legacy HTML/CSS/JS version kept for reference
 
-- `frontend-react/` - Current React frontend
-- `backend/` - Express backend and API routes
-- `frontend/studyhub/` - Old plain HTML/CSS/JS frontend kept for reference or backup
+## Prerequisites
 
----
+- Node.js 20+ and npm
+- PostgreSQL 14+ running locally
+- Cloudinary account and unsigned upload preset for video uploads
 
-## Main Technologies Used
+## Initial Setup
 
-### Frontend
-- React (Vite)
-- React Router
-- Axios
-- CSS
-
-### Backend
-- Node.js
-- Express.js
-- PostgreSQL
-- Cloudinary
-- dotenv
-
-### External Storage / Hosting
-- Cloudinary - video hosting and thumbnail handling
-- Google Drive - lab sheet and model paper links
-
----
-
-## Current Features Implemented
-
-### Video Module
-- Display all videos
-- Search videos
-- Sort videos
-- View video details
-- Embedded video player inside details page
-- View count increment
-- Upload new videos
-- Edit video details
-- Replace uploaded video
-- Delete videos
-- Real Cloudinary video upload
-- Automatic video thumbnail generation
-- Clean replacement flow with old Cloudinary video deletion
-
-### Materials
-- Lab Sheet link support
-- Model Paper link support
-- Google Drive document links open in a new tab
-- Materials can be optional
-- "Not available" message shown when a material is missing
-
-### Admin Workflow
-- Upload video content
-- Edit video details
-- Replace video with a new Cloudinary upload
-- Delete videos
-- Add or update Lab Sheet and Model Paper links
-
----
-
-## Important Notes
-
-- `frontend-react/` is the current active frontend.
-- `frontend/studyhub/` is the older plain HTML/CSS/JS version and is no longer the main implementation.
-- Videos are stored using Cloudinary.
-- Lab sheets and model papers are currently stored externally using Google Drive links.
-- Authentication, signup/login, and role-based access control are planned for later integration.
-
----
-
-## Backend Files
-
-- `server.js` - Express server and API routes
-- `db.js` - PostgreSQL database connection
-- `cloudinary.js` - Cloudinary backend configuration
-- `.env` - Environment variables for backend secrets
-
----
-
-## Frontend Pages
-
-### React Frontend
-- `Home` - Video listing page
-- `VideoDetails` - Video details page with embedded player and materials
-- `UploadVideo` - Upload page for new videos
-- `EditVideo` - Edit and replace existing videos
-
----
-
-## How to Run
-
-### Backend
-1. Open terminal in `backend`
-2. Run:
+1. Install dependencies:
 
 ```bash
 npm install
+npm install --prefix backend
+npm install --prefix frontend-react
+```
+
+2. Create environment files:
+
+```bash
+copy backend\.env.example backend\.env
+copy frontend-react\.env.example frontend-react\.env
+```
+
+3. Update the env files with your local values:
+
+- `backend/.env`
+  - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- `frontend-react/.env`
+  - `VITE_API_BASE_URL`
+  - `VITE_CLOUDINARY_CLOUD_NAME`
+  - `VITE_CLOUDINARY_UPLOAD_PRESET`
+
+4. Create the database and tables:
+
+```bash
+psql -U postgres -c "CREATE DATABASE \"StudyHub\";"
+psql -U postgres -d StudyHub -f backend/schema.sql
+```
+
+## Start The Project
+
+From the repository root:
+
+```bash
 npm run dev
+```
+
+This starts:
+
+- Backend API on `http://localhost:5001`
+- Frontend Vite app on `http://localhost:5173`
+
+## Available Features
+
+- Browse videos
+- Search and sort videos
+- View video details and increment view counts
+- Upload, edit, and delete videos
+- Attach optional lab sheet and model paper links
+- Manage internship listings
+
+## Notes
+
+- Video upload and replacement require the frontend and backend Cloudinary env values to be configured.
+- If Cloudinary backend credentials are missing, the app still runs, but old video cleanup on replacement is skipped.
+- The frontend API base URL defaults to `http://localhost:5001`.

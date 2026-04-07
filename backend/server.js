@@ -4,10 +4,10 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import pool from "./db.js";
-import cloudinary from "./cloudinary.js";
+import cloudinary, { isCloudinaryConfigured } from "./cloudinary.js";
 
 const app = express();
-const PORT = 5001;
+const PORT = Number(process.env.PORT || 5001);
 
 app.use(cors());
 app.use(express.json());
@@ -248,7 +248,7 @@ app.put("/api/videos/:id", async (req, res) => {
       videoPublicId &&
       oldPublicId !== videoPublicId;
 
-    if (isVideoReplaced) {
+    if (isVideoReplaced && isCloudinaryConfigured) {
       try {
         console.log("Deleting old Cloudinary video:", oldPublicId);
 
@@ -261,6 +261,10 @@ app.put("/api/videos/:id", async (req, res) => {
       } catch (cloudinaryError) {
         console.error("Failed to delete old Cloudinary video:", cloudinaryError);
       }
+    } else if (isVideoReplaced) {
+      console.warn(
+        "Skipping old Cloudinary video deletion because Cloudinary is not configured."
+      );
     }
 
     const result = await pool.query(

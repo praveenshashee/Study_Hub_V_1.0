@@ -1,15 +1,23 @@
 import { useEffect, useRef } from "react";
+import {
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_UPLOAD_PRESET
+} from "../config.js";
 
 function CloudinaryUploadButton({ onUploadSuccess }) {
   const widgetRef = useRef(null);
+  const isCloudinaryReady = Boolean(
+    CLOUDINARY_CLOUD_NAME &&
+    CLOUDINARY_UPLOAD_PRESET
+  );
 
   useEffect(() => {
-    if (!window.cloudinary) return;
+    if (!window.cloudinary || !isCloudinaryReady) return;
 
     widgetRef.current = window.cloudinary.createUploadWidget(
       {
-        cloudName: "de9xr5nq4",
-        uploadPreset: "studyhub_videos",
+        cloudName: CLOUDINARY_CLOUD_NAME,
+        uploadPreset: CLOUDINARY_UPLOAD_PRESET,
         resourceType: "video",
         multiple: false,
         sources: ["local", "url", "camera"]
@@ -20,7 +28,7 @@ function CloudinaryUploadButton({ onUploadSuccess }) {
         }
       }
     );
-  }, [onUploadSuccess]);
+  }, [isCloudinaryReady, onUploadSuccess]);
 
   const handleOpenWidget = () => {
     if (widgetRef.current) {
@@ -29,7 +37,7 @@ function CloudinaryUploadButton({ onUploadSuccess }) {
   };
 
   return (
-    <button type="button" onClick={handleOpenWidget}>
+    <button type="button" onClick={handleOpenWidget} disabled={!isCloudinaryReady}>
       Upload Video to Cloudinary
     </button>
   );

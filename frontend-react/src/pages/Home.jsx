@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import VideoCard from "../components/VideoCard";
 import { Link } from "react-router-dom";
+import usePersonalization from "../hooks/usePersonalization.js";
 
 function Home() {
   const [videos, setVideos] = useState([]);
@@ -10,6 +11,7 @@ function Home() {
   const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { isBookmarked, toggleBookmark } = usePersonalization();
 
   useEffect(() => {
     fetchVideos();
@@ -127,10 +129,15 @@ function Home() {
           </select>
         </div>
 
-        {/* Upload button for admin use */}
-        <Link to="/upload" className="upload-link">
-          + Upload New Video
-        </Link>
+        <div className="home-action-links">
+          <Link to="/dashboard" className="dashboard-link">
+            Open Dashboard
+          </Link>
+
+          <Link to="/upload" className="upload-link">
+            + Upload New Video
+          </Link>
+        </div>
       </div>
 
       {loading && <p>Loading videos...</p>}
@@ -138,7 +145,12 @@ function Home() {
 
       <div className="video-list">
         {sortedVideos.map((video) => (
-          <VideoCard key={video.id} video={video} />
+          <VideoCard
+            key={video.id}
+            video={video}
+            isBookmarked={isBookmarked(video.id)}
+            onToggleBookmark={() => toggleBookmark(video.id)}
+          />
         ))}
       </div>
     </div>

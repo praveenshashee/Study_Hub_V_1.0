@@ -31,6 +31,9 @@ function Navbar({ theme, toggleTheme }) {
                 <NavLink to="/" end>
                     Home
                 </NavLink>
+                <NavLink to="/dashboard">
+                    Dashboard
+                </NavLink>
                 <NavLink to="/internships">
                     Internships
                 </NavLink>

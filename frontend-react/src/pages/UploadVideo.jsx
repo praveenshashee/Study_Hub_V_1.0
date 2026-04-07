@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 import CloudinaryUploadButton from "../components/CloudinaryUploadButton";
+import { buildCloudinaryThumbnailUrl } from "../utils/cloudinary.js";
 
 function UploadVideo() {
   const navigate = useNavigate();
@@ -29,8 +30,9 @@ function UploadVideo() {
   };
 
   const handleVideoUploadSuccess = (uploadedVideo) => {
-    const generatedThumbnailUrl =
-      `https://res.cloudinary.com/de9xr5nq4/video/upload/so_1/${uploadedVideo.public_id}.jpg`;
+    const generatedThumbnailUrl = buildCloudinaryThumbnailUrl(
+      uploadedVideo.public_id
+    );
 
     setFormData((prev) => ({
       ...prev,
@@ -103,6 +105,11 @@ function UploadVideo() {
 
           <label>Upload Video</label>
           <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
+          <p className="section-help">
+            Set <code>VITE_CLOUDINARY_CLOUD_NAME</code> and{" "}
+            <code>VITE_CLOUDINARY_UPLOAD_PRESET</code> in{" "}
+            <code>frontend-react/.env</code> to enable uploads.
+          </p>
 
           <label>Video URL</label>
           <input
