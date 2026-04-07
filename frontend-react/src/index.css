@@ -109,6 +109,134 @@ body {
   min-height: 100vh;
 }
 
+
+/* ==================================================
+   MOBILE RESPONSIVE
+   ================================================== */
+@media (max-width: 640px) {
+
+  /* Navbar */
+  .navbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .navbar .nav-brand {
+    font-size: 1.08rem;
+  }
+
+  .nav-center-links {
+    gap: 4px;
+  }
+
+  .nav-center-links a {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+
+  .nav-right {
+    gap: 10px;
+  }
+
+  .theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.92rem;
+  }
+
+  .profile-avatar-circle,
+  .profile-dropdown-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .profile-dropdown {
+    width: 220px;
+    right: 0;
+  }
+
+  /* Shared page headers/layout */
+  .page-header {
+    padding: 28px 16px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 1.55rem;
+  }
+
+  .home-container,
+  .details-container,
+  .form-page-container {
+    padding: 20px 16px 32px;
+  }
+
+  /* Home page */
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 16px;
+  }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .subject-select,
+  .sort-select {
+    width: 100%;
+  }
+
+  .upload-link {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .video-list {
+    grid-template-columns: 1fr;
+  }
+
+  /* Page action buttons */
+  .page-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .back-link,
+  .upload-link,
+  .edit-link,
+  .delete-button,
+  .material-link {
+    width: 100%;
+  }
+
+  .video-form button {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  /* Auth pages */
+  .auth-page-shell {
+    padding: 20px 16px;
+    min-height: calc(100vh - 56px);
+  }
+
+  .auth-card {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.55rem;
+  }
+
+  /* Rating stars */
+  .star-btn {
+    font-size: 1.8rem;
+  }
+}
+
+
 /* ==================================================
    NAVBAR - ALL PAGES
    Used in: Navbar.jsx
@@ -157,7 +285,7 @@ body {
   color: #fff;
 }
 
-/* Right side of navbar */
+/* Right side */
 .nav-right {
   display: flex;
   align-items: center;
@@ -185,30 +313,7 @@ body {
   transform: translateY(-1px);
 }
 
-/* Login / Signup links when user is logged out */
-.auth-nav-links {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.auth-nav-links a {
-  color: rgba(255, 255, 255, 0.88);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.92rem;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition), color var(--transition);
-}
-
-.auth-nav-links a:hover,
-.auth-nav-links a.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-/* Profile dropdown when user is logged in */
+/* Profile / guest dropdown */
 .profile-menu {
   position: relative;
 }
@@ -220,7 +325,8 @@ body {
   padding: 0;
 }
 
-.profile-avatar-circle {
+.profile-avatar-circle,
+.profile-dropdown-avatar {
   width: 42px;
   height: 42px;
   border-radius: 999px;
@@ -232,7 +338,10 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition);
+}
+
+.guest-avatar {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
 }
 
 .profile-icon-btn:hover .profile-avatar-circle {
@@ -243,7 +352,7 @@ body {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  min-width: 210px;
+  width: 250px;
   background: var(--card-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -255,18 +364,26 @@ body {
   z-index: 200;
 }
 
-.profile-dropdown-user {
-  padding: 10px 12px;
+.profile-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 14px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 4px;
+}
+
+.profile-dropdown-user {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .profile-dropdown-user strong {
   color: var(--text);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
 }
 
 .profile-dropdown-user span {
@@ -299,31 +416,6 @@ body {
 
 .logout-btn {
   font-family: inherit;
-}
-
-/* ==================================================
-   AUTH LINKS IN NAVBAR
-   ================================================== */
-.auth-nav-links {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.auth-nav-links a {
-  color: rgba(255, 255, 255, 0.88);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.92rem;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition), color var(--transition);
-}
-
-.auth-nav-links a:hover,
-.auth-nav-links a.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
 }
 
 /* ==================================================
@@ -980,171 +1072,6 @@ body {
   color: var(--error);
   margin-top: 16px;
   font-weight: 600;
-}
-
-/* ==================================================
-   MOBILE RESPONSIVE
-   ================================================== */
-@media (max-width: 640px) {
-  .navbar {
-    padding: 0 16px;
-    height: 56px;
-  }
-
-  .navbar .nav-brand {
-    font-size: 1.08rem;
-  }
-
-  .navbar .nav-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .page-header {
-    padding: 28px 16px 16px;
-  }
-
-  .page-header h1 {
-    font-size: 1.55rem;
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0 16px;
-  }
-
-  .home-container,
-  .details-container,
-  .form-page-container {
-    padding: 20px 16px 32px;
-  }
-
-  .video-list {
-    grid-template-columns: 1fr;
-  }
-
-  .page-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .back-link,
-  .upload-link,
-  .edit-link,
-  .delete-button,
-  .material-link {
-    width: 100%;
-  }
-
-  .video-form button {
-    width: 100%;
-    align-self: stretch;
-  }
-
-  .nav-center-links {
-    gap: 4px;
-  }
-
-  .nav-center-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .profile-avatar-circle {
-    width: 38px;
-    height: 38px;
-    font-size: 0.82rem;
-  }
-
-  .profile-dropdown {
-    right: 0;
-    min-width: 170px;
-  }
-
-  .nav-right {
-    gap: 10px;
-  }
-
-  .theme-toggle-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 0.92rem;
-  }
-
-  .control-group {
-    width: 100%;
-  }
-
-  .subject-select,
-  .sort-select {
-    width: 100%;
-  }
-
-  .upload-link {
-    width: 100%;
-    align-self: stretch;
-  }
-
-  .auth-nav-links {
-    gap: 4px;
-  }
-
-  .auth-nav-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .auth-page-container {
-    padding: 20px 16px 32px;
-  }
-
-  .nav-right {
-    gap: 10px;
-  }
-
-  .theme-toggle-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 0.92rem;
-  }
-
-  .auth-nav-links {
-    gap: 4px;
-  }
-
-  .auth-nav-links a {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-  }
-
-  .auth-page-shell {
-    padding: 20px 16px;
-    min-height: calc(100vh - 56px);
-  }
-
-  .auth-card {
-    padding: 22px 18px;
-    border-radius: 18px;
-  }
-
-  .auth-header h1 {
-    font-size: 1.55rem;
-  }
-
-  .profile-avatar-circle {
-    width: 38px;
-    height: 38px;
-    font-size: 0.82rem;
-  }
-
-  .profile-dropdown {
-    min-width: 180px;
-  }
-
-  .star-btn {
-    font-size: 1.8rem;
-  }
 }
 
 /* ==================================================
