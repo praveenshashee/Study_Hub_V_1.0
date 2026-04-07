@@ -34,11 +34,15 @@ function InternshipsHome() {
     return internships.filter((intern) => {
       const title = intern?.title || "";
       const company = intern?.company || "";
+      const gmail = intern?.gmail || "";
       const internCategory = intern?.category || "";
 
+      const searchText = search.toLowerCase();
+
       const matchesSearch =
-        title.toLowerCase().includes(search.toLowerCase()) ||
-        company.toLowerCase().includes(search.toLowerCase());
+        title.toLowerCase().includes(searchText) ||
+        company.toLowerCase().includes(searchText) ||
+        gmail.toLowerCase().includes(searchText);
 
       const matchesCategory =
         category === "" || internCategory === category;
@@ -75,9 +79,24 @@ function InternshipsHome() {
           <option value="Bio tech">Bio tech</option>
         </select>
 
-        <Link to="/internships/add" className="upload-link internships-add-link">
-          + Add Internship
-        </Link>
+        <div className="internships-action-links">
+          <div className="internships-action-links">
+            <Link to="/internships/add" className="upload-link internships-add-link">
+              + Add Internship
+            </Link>
+
+            <Link to="/internships/notify" className="upload-link internships-notify-link">
+              Notify Intern
+            </Link>
+
+            <Link
+              to="/internships/notifications"
+              className="upload-link internships-notification-link"
+            >
+              Intern Notification
+            </Link>
+          </div>
+        </div>
       </div>
 
       {loading && <p className="page-message">Loading internships...</p>}
@@ -97,8 +116,9 @@ function InternshipsHome() {
               <div key={internshipId} className="internship-card">
                 <h3>{intern.title}</h3>
                 <p><strong>Company:</strong> {intern.company}</p>
+                <p><strong>Gmail:</strong> {intern.gmail || "Not provided"}</p>
                 <p><strong>Category:</strong> {intern.category}</p>
-                <p><strong>Type:</strong> {intern.type || "Internship"}</p>
+                <p><strong>Type:</strong> {intern.type || intern.job_type || "Internship"}</p>
                 <p><strong>Location:</strong> {intern.location || "Not specified"}</p>
                 <p>
                   <strong>Deadline:</strong>{" "}

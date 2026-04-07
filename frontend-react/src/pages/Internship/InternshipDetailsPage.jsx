@@ -73,8 +73,9 @@ function InternshipDetailsPage() {
 
         <div className="internship-details-meta">
           <p><strong>Company:</strong> {internship.company}</p>
+          <p><strong>Gmail:</strong> {internship.gmail || "Not provided"}</p>
           <p><strong>Category:</strong> {internship.category}</p>
-          <p><strong>Type:</strong> {internship.type || internship.jobType || "Internship"}</p>
+          <p><strong>Type:</strong> {internship.type || internship.jobType || internship.job_type || "Internship"}</p>
           <p><strong>Location:</strong> {internship.location || "Not specified"}</p>
           <p>
             <strong>Deadline:</strong>{" "}
