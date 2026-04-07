@@ -1214,40 +1214,115 @@ body {
 }
 
 /* ==================================================
-   INTERNSHIP UPDATE PAGE
-   Used in: pages/Internship/UpdateInternshipPage.jsx
+   INTERNSHIP ACTION BUTTONS (Update / Delete)
+   Used in: InternshipDetailsPage.jsx
    ================================================== */
-.internship-update-feedback {
-  margin-bottom: 16px;
+.action-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+/* Update button */
+.edit-btn {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.edit-btn:hover {
+  background-color: #1e4ed8;
+}
+
+/* Delete button */
+.delete-btn {
+  background-color: #dc2626;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: #b91c1c;
+}
+
+/* Container for buttons */
+.internship-details-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+
+/* ==================================================
+   NOTIFY INTERN PAGE
+   Used in: pages/Internship/NotifyInternPage.jsx
+   ================================================== */
+.notify-intern-page {
+  max-width: 820px;
+}
+
+.notify-intern-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.notify-intern-feedback {
   text-align: center;
 }
 
 /* ==================================================
-   INTERNSHIP DELETE PAGE
-   Used in: pages/Internship/DeleteInternshipPage.jsx
+   INTERNSHIP NOTIFICATIONS PAGE
+   Used in: pages/Internship/InternshipNotificationsPage.jsx
    ================================================== */
-.internship-delete-page {
-  max-width: 700px;
-}
-
-.internship-delete-box {
-  margin-top: 20px;
-  padding: 24px;
-  border-radius: var(--radius);
-  background: var(--card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  text-align: center;
-}
-
-.internship-delete-warning {
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #b02a2a;
-}
-
-.internship-delete-actions {
+.internships-action-links {
   display: flex;
-  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.internships-notify-link,
+.internships-notification-link {
+  white-space: nowrap;
+}
+
+.internship-notifications-page {
+  max-width: 1400px;
+}
+
+.internship-notifications-table-wrapper {
+  margin-top: 20px;
+  overflow-x: auto;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.internship-notifications-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+}
+
+.internship-notifications-table th,
+.internship-notifications-table td {
+  padding: 14px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.95rem;
+}
+
+.internship-notifications-table th {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.internship-notifications-table td {
+  color: var(--text-secondary);
 }

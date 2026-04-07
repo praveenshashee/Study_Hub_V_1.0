@@ -9,6 +9,7 @@ function UpdateInternshipPage() {
   const [formData, setFormData] = useState({
     title: "",
     company: "",
+    gmail: "",
     location: "",
     category: "IT",
     jobType: "Full time",
@@ -36,9 +37,10 @@ function UpdateInternshipPage() {
       setFormData({
         title: internship.title || "",
         company: internship.company || "",
+        gmail: internship.gmail || "",
         location: internship.location || "",
         category: internship.category || "IT",
-        jobType: internship.type || internship.jobType || "Full time",
+        jobType: internship.type || internship.jobType || internship.job_type || "Full time",
         description: internship.description || "",
         deadline: internship.deadline
           ? new Date(internship.deadline).toISOString().split("T")[0]
@@ -133,6 +135,16 @@ function UpdateInternshipPage() {
           id="company"
           placeholder="Company"
           value={formData.company}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="gmail">Gmail</label>
+        <input
+          type="email"
+          id="gmail"
+          placeholder="example@gmail.com"
+          value={formData.gmail}
           onChange={handleChange}
           required
         />

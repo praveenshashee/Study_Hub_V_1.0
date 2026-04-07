@@ -10,6 +10,8 @@ import AddInternshipPage from "./pages/Internship/AddInternshipPage";
 import InternshipDetailsPage from "./pages/Internship/InternshipDetailsPage";
 import UpdateInternshipPage from "./pages/Internship/UpdateInternshipPage";
 import DeleteInternshipPage from "./pages/Internship/DeleteInternshipPage";
+import NotifyInternPage from "./pages/Internship/NotifyInternPage";
+import InternshipNotificationsPage from "./pages/Internship/InternshipNotificationsPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import api from "./services/api.js";
@@ -85,6 +87,8 @@ function App() {
         <Route path="/internships/details/:id" element={<InternshipDetailsPage />} />
         <Route path="/internships/update/:id" element={<UpdateInternshipPage />} />
         <Route path="/internships/delete/:id" element={<DeleteInternshipPage />} />
+        <Route path="/internships/notify" element={<NotifyInternPage />} />
+        <Route path="/internships/notifications" element={<InternshipNotificationsPage />} />
       </Routes>
     </>
   );

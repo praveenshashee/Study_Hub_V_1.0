@@ -647,22 +647,38 @@ app.delete("/api/videos/:id", requireAdmin, async (req, res) => {
 app.get("/api/internships", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT
+      select
         id,
         title,
         company,
+        company_email,
         category,
-        type,
-        job_type,
+        employment_type,
         location,
         description,
         deadline,
         created_at
-      FROM internships
-      ORDER BY id DESC
+      from internships
+      order by id desc
     `);
 
-    res.status(200).json(result.rows);
+    const internships = result.rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      company: row.company,
+      gmail: row.company_email,
+      companyEmail: row.company_email,
+      category: row.category,
+      type: row.employment_type,
+      jobType: row.employment_type,
+      employmentType: row.employment_type,
+      location: row.location,
+      description: row.description,
+      deadline: row.deadline,
+      created_at: row.created_at,
+    }));
+
+    res.status(200).json(internships);
   } catch (error) {
     console.error("Error fetching internships:", error);
     res.status(500).json({ message: "Failed to fetch internships." });
@@ -676,19 +692,19 @@ app.get("/api/internships/:id", async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT
+      select
         id,
         title,
         company,
+        company_email,
         category,
-        type,
-        job_type,
+        employment_type,
         location,
         description,
         deadline,
         created_at
-      FROM internships
-      WHERE id = $1
+      from internships
+      where id = $1
       `,
       [id]
     );
@@ -697,7 +713,23 @@ app.get("/api/internships/:id", async (req, res) => {
       return res.status(404).json({ message: "Internship not found." });
     }
 
-    res.status(200).json(result.rows[0]);
+    const row = result.rows[0];
+
+    res.status(200).json({
+      id: row.id,
+      title: row.title,
+      company: row.company,
+      gmail: row.company_email,
+      companyEmail: row.company_email,
+      category: row.category,
+      type: row.employment_type,
+      jobType: row.employment_type,
+      employmentType: row.employment_type,
+      location: row.location,
+      description: row.description,
+      deadline: row.deadline,
+      created_at: row.created_at,
+    });
   } catch (error) {
     console.error("Error fetching internship by ID:", error);
     res.status(500).json({ message: "Failed to fetch internship details." });
@@ -705,55 +737,77 @@ app.get("/api/internships/:id", async (req, res) => {
 });
 
 // CREATE internship
-app.post("/api/internships", requireAdmin, async (req, res) => {
+app.post("/api/internships", async (req, res) => {
   try {
     const {
       title,
       company,
+      gmail,
+      companyEmail,
       category,
       type,
       job_type,
       jobType,
+      employmentType,
       location,
       description,
       deadline
     } = req.body;
 
-    if (!title || !company) {
-      return res.status(400).json({ message: "Title and company are required." });
-    }
+    const resolvedEmail = companyEmail || gmail || null;
+    const resolvedEmploymentType =
+      employmentType || jobType || job_type || type || null;
 
-    const resolvedType = type || job_type || jobType || null;
-    const resolvedJobType = job_type || jobType || type || null;
+    if (!title || !company || !resolvedEmail) {
+      return res.status(400).json({
+        message: "Title, company, and company email are required."
+      });
+    }
 
     const result = await pool.query(
       `
-      INSERT INTO internships (
+      insert into internships (
         title,
         company,
+        company_email,
         category,
-        type,
-        job_type,
+        employment_type,
         location,
         description,
         deadline
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
+      values ($1, $2, $3, $4, $5, $6, $7, $8)
+      returning *
       `,
       [
         title,
         company,
+        resolvedEmail,
         category || null,
-        resolvedType,
-        resolvedJobType,
+        resolvedEmploymentType,
         location || null,
         description || null,
         deadline || null
       ]
     );
 
-    res.status(201).json(result.rows[0]);
+    const row = result.rows[0];
+
+    res.status(201).json({
+      id: row.id,
+      title: row.title,
+      company: row.company,
+      gmail: row.company_email,
+      companyEmail: row.company_email,
+      category: row.category,
+      type: row.employment_type,
+      jobType: row.employment_type,
+      employmentType: row.employment_type,
+      location: row.location,
+      description: row.description,
+      deadline: row.deadline,
+      created_at: row.created_at,
+    });
   } catch (error) {
     console.error("Error creating internship:", error);
     res.status(500).json({ message: "Failed to create internship." });
@@ -761,49 +815,55 @@ app.post("/api/internships", requireAdmin, async (req, res) => {
 });
 
 // UPDATE internship
-app.put("/api/internships/:id", requireAdmin, async (req, res) => {
+app.put("/api/internships/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const {
       title,
       company,
+      gmail,
+      companyEmail,
       category,
       type,
       job_type,
       jobType,
+      employmentType,
       location,
       description,
       deadline
     } = req.body;
 
-    if (!title || !company) {
-      return res.status(400).json({ message: "Title and company are required." });
-    }
+    const resolvedEmail = companyEmail || gmail || null;
+    const resolvedEmploymentType =
+      employmentType || jobType || job_type || type || null;
 
-    const resolvedType = type || job_type || jobType || null;
-    const resolvedJobType = job_type || jobType || type || null;
+    if (!title || !company || !resolvedEmail) {
+      return res.status(400).json({
+        message: "Title, company, and company email are required."
+      });
+    }
 
     const result = await pool.query(
       `
-      UPDATE internships
-      SET
+      update internships
+      set
         title = $1,
         company = $2,
-        category = $3,
-        type = $4,
-        job_type = $5,
+        company_email = $3,
+        category = $4,
+        employment_type = $5,
         location = $6,
         description = $7,
         deadline = $8
-      WHERE id = $9
-      RETURNING *
+      where id = $9
+      returning *
       `,
       [
         title,
         company,
+        resolvedEmail,
         category || null,
-        resolvedType,
-        resolvedJobType,
+        resolvedEmploymentType,
         location || null,
         description || null,
         deadline || null,
@@ -815,7 +875,23 @@ app.put("/api/internships/:id", requireAdmin, async (req, res) => {
       return res.status(404).json({ message: "Internship not found." });
     }
 
-    res.status(200).json(result.rows[0]);
+    const row = result.rows[0];
+
+    res.status(200).json({
+      id: row.id,
+      title: row.title,
+      company: row.company,
+      gmail: row.company_email,
+      companyEmail: row.company_email,
+      category: row.category,
+      type: row.employment_type,
+      jobType: row.employment_type,
+      employmentType: row.employment_type,
+      location: row.location,
+      description: row.description,
+      deadline: row.deadline,
+      created_at: row.created_at,
+    });
   } catch (error) {
     console.error("Error updating internship:", error);
     res.status(500).json({ message: "Failed to update internship." });
@@ -823,15 +899,15 @@ app.put("/api/internships/:id", requireAdmin, async (req, res) => {
 });
 
 // DELETE internship
-app.delete("/api/internships/:id", requireAdmin, async (req, res) => {
+app.delete("/api/internships/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
     const result = await pool.query(
       `
-      DELETE FROM internships
-      WHERE id = $1
-      RETURNING *
+      delete from internships
+      where id = $1
+      returning *
       `,
       [id]
     );
@@ -847,7 +923,160 @@ app.delete("/api/internships/:id", requireAdmin, async (req, res) => {
   }
 });
 
+app.post("/api/internship-notifications", async (req, res) => {
+  try {
+    const {
+      studentName,
+      studentEmail,
+      company,
+      companyEmail,
+      internshipTitle,
+      category,
+      jobType,
+      location,
+      deadline,
+      description,
+      notes
+    } = req.body;
+
+    if (!studentName || !studentEmail || !company || !companyEmail || !internshipTitle) {
+      return res.status(400).json({
+        message: "Missing required fields."
+      });
+    }
+
+    const result = await pool.query(
+      `
+      insert into internship_notifications (
+        student_name,
+        student_email,
+        company,
+        company_email,
+        internship_title,
+        category,
+        employment_type,
+        location,
+        deadline,
+        description,
+        notes
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      returning *
+      `,
+      [
+        studentName,
+        studentEmail,
+        company,
+        companyEmail,
+        internshipTitle,
+        category || null,
+        jobType || null,
+        location || null,
+        deadline || null,
+        description || null,
+        notes || null
+      ]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error creating internship notification:", error);
+    res.status(500).json({ message: "Failed to submit internship notification." });
+  }
+});
+
 // Start the Express server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+// POST internship notification from student form
+app.post("/api/internship-notifications", async (req, res) => {
+  try {
+    const {
+      studentName,
+      studentEmail,
+      company,
+      companyEmail,
+      internshipTitle,
+      category,
+      jobType,
+      location,
+      deadline,
+      description,
+      notes
+    } = req.body;
+
+    if (!studentName || !studentEmail || !company || !companyEmail || !internshipTitle) {
+      return res.status(400).json({
+        message: "Missing required fields."
+      });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO internship_notifications (
+        student_name,
+        student_email,
+        company,
+        company_email,
+        internship_title,
+        category,
+        employment_type,
+        location,
+        deadline,
+        description,
+        notes
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *
+      `,
+      [
+        studentName,
+        studentEmail,
+        company,
+        companyEmail,
+        internshipTitle,
+        category || null,
+        jobType || null,
+        location || null,
+        deadline || null,
+        description || null,
+        notes || null
+      ]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error creating internship notification:", error);
+    res.status(500).json({ message: "Failed to submit internship notification." });
+  }
+});
+
+// GET all internship notifications for admin table
+app.get("/api/internship-notifications", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        student_name,
+        student_email,
+        company,
+        company_email,
+        internship_title,
+        category,
+        employment_type,
+        location,
+        deadline,
+        description,
+        notes,
+        created_at
+      FROM internship_notifications
+      ORDER BY id DESC
+    `);
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching internship notifications:", error);
+    res.status(500).json({ message: "Failed to fetch internship notifications." });
+  }
 });

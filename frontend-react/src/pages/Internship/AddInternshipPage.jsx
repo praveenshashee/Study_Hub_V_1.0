@@ -8,6 +8,7 @@ function AddInternshipPage() {
   const [formData, setFormData] = useState({
     title: "",
     company: "",
+    gmail: "",
     location: "",
     category: "IT",
     jobType: "Full time",
@@ -88,6 +89,16 @@ function AddInternshipPage() {
           id="company"
           placeholder="Company"
           value={formData.company}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="gmail">Gmail</label>
+        <input
+          type="email"
+          id="gmail"
+          placeholder="example@gmail.com"
+          value={formData.gmail}
           onChange={handleChange}
           required
         />
