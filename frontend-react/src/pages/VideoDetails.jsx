@@ -118,7 +118,7 @@ function VideoDetails({ currentUser, authLoading }) {
 
   return (
     <div className="details-container">
-      <Link to="/" className="back-link">← Back to Home</Link>
+      <Link to="/home" className="back-link">← Back to Home</Link>
 
       <h1>{video.title}</h1>
       <p><strong>Subject:</strong> {video.subject}</p>
