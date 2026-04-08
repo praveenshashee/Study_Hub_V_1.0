@@ -50,7 +50,7 @@ function UploadVideo() {
       setSuccessMessage("Video uploaded successfully");
 
       setTimeout(() => {
-        navigate("/");
+        navigate("/home");
       }, 1000);
     } catch (err) {
       console.error("Failed to upload video:", err);
