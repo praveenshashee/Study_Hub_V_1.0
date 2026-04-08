@@ -1,10 +1,9 @@
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 
-function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
+function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const profileMenuRef = useRef(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -17,7 +16,6 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
         };
 
         document.addEventListener("mousedown", handleClickOutside);
-
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
@@ -28,24 +26,12 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
         : "GU";
 
     return (
-        <nav className="navbar">
-            <Link to="/" className="nav-brand">
+        <nav className="landing-navbar">
+            <Link to="/" className="landing-nav-brand">
                 Study Hub
             </Link>
 
-            <div className="nav-center-links">
-                <NavLink to="/home" end>
-                    Home
-                </NavLink>
-                <NavLink to="/internships">
-                    Internships
-                </NavLink>
-                <NavLink to="/events">
-                    Events
-                </NavLink>
-            </div>
-
-            <div className="nav-right">
+            <div className="landing-nav-right">
                 <button
                     type="button"
                     className="theme-toggle-btn"
@@ -80,16 +66,14 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
 
                                 <div className="profile-dropdown-user">
                                     <strong>{currentUser ? currentUser.fullName : "Guest User"}</strong>
-                                    <span>
-                                        {currentUser ? currentUser.role : "Not logged in"}
-                                    </span>
+                                    <span>{currentUser ? currentUser.role : "Not logged in"}</span>
                                 </div>
                             </div>
 
                             {currentUser ? (
                                 <>
-                                    <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
-                                        My Profile
+                                    <NavLink to="/home" onClick={() => setMenuOpen(false)}>
+                                        Enter Platform
                                     </NavLink>
                                     <NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>
                                         Dashboard
@@ -98,10 +82,9 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
                                     <button
                                         type="button"
                                         className="logout-btn"
-                                        onClick={async () => {
+                                        onClick={() => {
                                             setMenuOpen(false);
-                                            await onLogout();
-                                            navigate("/");
+                                            onLogout();
                                         }}
                                     >
                                         Logout
@@ -125,4 +108,4 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
     );
 }
 
-export default Navbar;
+export default LandingNavbar;

@@ -1,10 +1,12 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
 import VideoDetails from "./pages/VideoDetails";
 import UploadVideo from "./pages/UploadVideo";
 import EditVideo from "./pages/EditVideo";
 import Navbar from "./components/Navbar";
+import LandingNavbar from "./components/LandingNavbar";
 import InternshipsHome from "./pages/Internship/InternshipsHome";
 import AddInternshipPage from "./pages/Internship/AddInternshipPage";
 import InternshipDetailsPage from "./pages/Internship/InternshipDetailsPage";
@@ -17,6 +19,8 @@ import Signup from "./pages/Signup";
 import api from "./services/api.js";
 
 function App() {
+  const location = useLocation();
+
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("studyhub-theme") || "light";
   });
@@ -60,18 +64,33 @@ function App() {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  const isLandingPage = location.pathname === "/";
+
   return (
     <>
-      <Navbar
-        theme={theme}
-        toggleTheme={toggleTheme}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-      />
+      {isLandingPage ? (
+        <LandingNavbar
+          theme={theme}
+          toggleTheme={toggleTheme}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
+      ) : (
+        <Navbar
+          theme={theme}
+          toggleTheme={toggleTheme}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
+      )}
 
       <Routes>
         <Route
           path="/"
+          element={<LandingPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/home"
           element={<Home currentUser={currentUser} authLoading={authLoading} />}
         />
         <Route
