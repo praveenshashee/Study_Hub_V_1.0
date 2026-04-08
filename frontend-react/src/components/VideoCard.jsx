@@ -1,18 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import BookmarkButton from "./BookmarkButton.jsx";
 import AccessRequiredModal from "./AccessRequiredModal";
 
-function VideoCard({
-  video,
-  currentUser,
-  isBookmarked = false,
-  onToggleBookmark,
-}) {
+function VideoCard({ video, currentUser }) {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const navigate = useNavigate();
-
-  const canToggleBookmark = typeof onToggleBookmark === "function";
 
   const handleCardClick = (e) => {
     e.preventDefault();
@@ -32,7 +24,7 @@ function VideoCard({
         className="video-card-link"
         onClick={handleCardClick}
       >
-        <article className="video-card">
+        <div className="video-card">
           <div className="video-thumb-wrap">
             <img
               src={video.thumbnailUrl}
@@ -40,13 +32,6 @@ function VideoCard({
               className="video-thumb"
             />
             <span className="video-subject-badge">{video.subject}</span>
-
-            {canToggleBookmark && (
-              <BookmarkButton
-                isBookmarked={isBookmarked}
-                onToggle={onToggleBookmark}
-              />
-            )}
           </div>
 
           <div className="video-card-body">
@@ -57,9 +42,9 @@ function VideoCard({
               <span>{video.rating} rating</span>
             </div>
 
-            <p className="video-date">Added on {video.createdAt}</p>
+            <p className="video-date">{video.createdAt}</p>
           </div>
-        </article>
+        </div>
       </Link>
 
       <AccessRequiredModal

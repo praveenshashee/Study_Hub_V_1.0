@@ -103,36 +103,8 @@ This current implementation includes a React-based frontend for the video module
 
 ### Backend
 1. Open terminal in `backend`
-2. Make sure `backend/.env` contains your PostgreSQL, session, and Cloudinary values
-3. Run:
-
-```bash
-npm install
-npm run dev
-```
-
-### Frontend
-1. Open terminal in `frontend-react`
-2. Optionally create a frontend `.env` with `VITE_API_BASE_URL=http://localhost:5001` if your backend runs on a different URL
-3. Run:
-
-```bash
-npm install
-npm run dev
-```
-
-### Run Both Together
-1. Open terminal in the project root
 2. Run:
 
 ```bash
 npm install
 npm run dev
-```
-
-### Environment Notes
-- Backend env file: `backend/.env`
-- Default backend port: `5001`
-- Default frontend URL: `http://localhost:5173`
-- Optional backend override: `FRONTEND_ORIGIN`
-- Optional frontend override: `VITE_API_BASE_URL`
