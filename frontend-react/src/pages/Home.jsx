@@ -147,6 +147,7 @@ function Home({ currentUser, authLoading }) {
           <VideoCard
             key={video.id}
             video={video}
+            currentUser={currentUser}
             isBookmarked={isBookmarked(video.id)}
             onToggleBookmark={() => toggleBookmark(video.id)}
           />

@@ -60,7 +60,7 @@ function UploadVideo() {
 
   return (
     <div className="form-page-container">
-      <Link to="/" className="back-link">← Back to Home</Link>
+      <Link to="/home" className="back-link">← Back to Home</Link>
 
       <header className="page-header form-header">
         <h1>Upload New Video</h1>

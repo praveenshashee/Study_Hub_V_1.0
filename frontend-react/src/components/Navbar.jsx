@@ -1,9 +1,10 @@
-﻿import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 
 function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -33,20 +34,14 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
       </Link>
 
       <div className="nav-center-links">
-        <NavLink to="/" end>
+        <NavLink to="/home" end>
           Home
         </NavLink>
-        {currentUser && (
-          <NavLink to="/dashboard">
-            Dashboard
-          </NavLink>
-        )}
-        <NavLink to="/internships">
-          Internships
-        </NavLink>
-        <NavLink to="/events">
-          Events
-        </NavLink>
+
+        {currentUser && <NavLink to="/dashboard">Dashboard</NavLink>}
+
+        <NavLink to="/internships">Internships</NavLink>
+        <NavLink to="/events">Events</NavLink>
       </div>
 
       <div className="nav-right">
@@ -102,9 +97,10 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
                   <button
                     type="button"
                     className="logout-btn"
-                    onClick={() => {
+                    onClick={async () => {
                       setMenuOpen(false);
-                      onLogout();
+                      await onLogout();
+                      navigate("/");
                     }}
                   >
                     Logout
