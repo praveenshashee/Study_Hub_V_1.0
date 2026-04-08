@@ -7,6 +7,5 @@ export default defineConfig({
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] })
-  ],
-  base: process.env.VITE_BASE_PATH || "/Study_Hub_V_1.0",
-});
+  ]
+})
