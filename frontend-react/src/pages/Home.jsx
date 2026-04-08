@@ -140,7 +140,11 @@ function Home({ currentUser, authLoading }) {
 
       <div className="video-list">
         {sortedVideos.map((video) => (
-          <VideoCard key={video.id} video={video} />
+          <VideoCard
+            key={video.id}
+            video={video}
+            currentUser={currentUser}
+          />
         ))}
       </div>
     </div>

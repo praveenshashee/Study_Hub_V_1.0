@@ -302,7 +302,148 @@ body {
   .landing-feature-strip {
     grid-template-columns: 1fr;
   }
+
+  .access-modal {
+    padding: 24px 18px;
+    border-radius: 20px;
+  }
+
+  .access-modal-actions {
+    flex-direction: column;
+  }
+
+  .access-modal-primary-btn,
+  .access-modal-secondary-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
+
+/* ==================================================
+   ACCESS REQUIRED MODAL
+   Used in: AccessRequiredModal.jsx
+   ================================================== */
+.access-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 999;
+  animation: accessFadeIn 0.22s ease;
+}
+
+.access-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card-solid);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  padding: 28px 24px;
+  text-align: center;
+  animation: accessPopIn 0.22s ease;
+}
+
+.access-modal-icon {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(217, 119, 6, 0.14);
+  font-size: 1.6rem;
+}
+
+.access-modal h2 {
+  margin: 0 0 10px;
+  color: var(--primary);
+  font-size: 1.45rem;
+}
+
+.access-modal p {
+  margin: 0 0 22px;
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+}
+
+.access-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.access-modal-primary-btn,
+.access-modal-secondary-btn {
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: transform var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.access-modal-primary-btn {
+  background: linear-gradient(135deg, var(--accent), #fb7185);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.access-modal-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.access-modal-secondary-btn {
+  background: rgba(31, 59, 99, 0.08);
+  color: var(--primary);
+}
+
+.access-modal-secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.access-modal-close {
+  margin-top: 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.access-modal-close:hover {
+  color: var(--text);
+}
+
+@keyframes accessFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes accessPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 
 /* ==================================================
    LANDING NAVBAR
