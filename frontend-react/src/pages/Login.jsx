@@ -2,89 +2,91 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 
-function Login() {
-    const navigate = useNavigate();
+function Login({ onAuthSuccess = () => {} }) {
+  const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        email: "",
-        password: ""
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleChange = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value
     });
+  };
 
-    const [error, setError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccessMessage("");
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+    try {
+      const response = await api.post("/api/auth/login", formData);
+      onAuthSuccess(response.data.user || null);
+      setSuccessMessage(response.data.message || "Login successful");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setSuccessMessage("");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } catch (err) {
+      console.error("Login failed:", err);
+      setError(err.response?.data?.message || "Failed to log in");
+    }
+  };
 
-        try {
-            const response = await api.post("/api/auth/login", formData);
+  return (
+    <div className="auth-page-shell">
+      <div className="auth-card">
+        <Link to="/" className="back-link auth-back-link">
+          &lt; Back to Home
+        </Link>
 
-            setSuccessMessage(response.data.message || "Login successful");
+        <header className="auth-header">
+          <h1>Welcome Back</h1>
+          <p>Log in to continue using Study Hub.</p>
+        </header>
 
-            setTimeout(() => {
-                navigate("/");
-            }, 1000);
-        } catch (err) {
-            console.error("Login failed:", err);
-            setError(err.response?.data?.message || "Failed to log in");
-        }
-    };
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
 
-    return (
-        <div className="auth-page-shell">
-            <div className="auth-card">
-                <Link to="/" className="back-link auth-back-link">← Back to Home</Link>
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
 
-                <header className="auth-header">
-                    <h1>Welcome Back</h1>
-                    <p>Log in to continue using Study Hub.</p>
-                </header>
+          <button type="submit">Login</button>
+        </form>
 
-                <form onSubmit={handleSubmit} className="auth-form">
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
+        {successMessage && <p className="success-text">{successMessage}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Enter your password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <button type="submit">Login</button>
-                </form>
-
-                {successMessage && <p className="success-text">{successMessage}</p>}
-                {error && <p className="error-text">{error}</p>}
-
-                <p className="auth-switch-text">
-                    Don’t have an account?{" "}
-                    <Link to="/signup" className="auth-inline-link">
-                        Create one
-                    </Link>
-                </p>
-            </div>
-        </div>
-    );
+        <p className="auth-switch-text">
+          Don't have an account?{" "}
+          <Link to="/signup" className="auth-inline-link">
+            Create one
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default Login;

@@ -9,11 +9,12 @@ import pool from "./db.js";
 import cloudinary from "./cloudinary.js";
 
 const app = express();
-const PORT = 5001;
+const PORT = Number(process.env.PORT) || 5001;
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 
 // Middleware configuration
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: FRONTEND_ORIGIN,
   credentials: true
 }));
 
@@ -61,6 +62,76 @@ function requireAdmin(req, res, next) {
     return res.status(403).json({ message: "Forbidden" });
   }
   next();
+}
+
+const tableColumnCache = new Map();
+
+async function getTableColumns(tableName) {
+  if (tableColumnCache.has(tableName)) {
+    return tableColumnCache.get(tableName);
+  }
+
+  const result = await pool.query(
+    `
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = $1
+    ORDER BY ordinal_position
+    `,
+    [tableName]
+  );
+
+  const columns = new Set(result.rows.map((row) => row.column_name));
+  tableColumnCache.set(tableName, columns);
+  return columns;
+}
+
+async function getInternshipSchema() {
+  const columns = await getTableColumns("internships");
+  const emailColumn = columns.has("company_email")
+    ? "company_email"
+    : columns.has("gmail")
+      ? "gmail"
+      : null;
+  const employmentTypeColumn = columns.has("employment_type")
+    ? "employment_type"
+    : columns.has("job_type")
+      ? "job_type"
+      : columns.has("type")
+        ? "type"
+        : null;
+
+  if (!emailColumn) {
+    throw new Error("Internships table is missing both company_email and gmail columns.");
+  }
+
+  return {
+    emailColumn,
+    employmentTypeColumn
+  };
+}
+
+function mapInternshipRow(row, schema) {
+  const emailValue = row[schema.emailColumn];
+  const employmentTypeValue = schema.employmentTypeColumn
+    ? row[schema.employmentTypeColumn]
+    : null;
+
+  return {
+    id: row.id,
+    title: row.title,
+    company: row.company,
+    gmail: emailValue,
+    companyEmail: emailValue,
+    category: row.category,
+    type: employmentTypeValue,
+    jobType: employmentTypeValue,
+    employmentType: employmentTypeValue,
+    location: row.location,
+    description: row.description,
+    deadline: row.deadline,
+    created_at: row.created_at
+  };
 }
 
 
@@ -646,37 +717,38 @@ app.delete("/api/videos/:id", requireAdmin, async (req, res) => {
 // GET all internships
 app.get("/api/internships", async (req, res) => {
   try {
+    const schema = await getInternshipSchema();
+    const employmentTypeSelect = schema.employmentTypeColumn
+      ? `, ${schema.employmentTypeColumn} AS employment_type_value`
+      : "";
     const result = await pool.query(`
       select
         id,
         title,
         company,
-        company_email,
+        ${schema.emailColumn} AS company_email_value,
         category,
-        employment_type,
         location,
         description,
         deadline,
         created_at
+        ${employmentTypeSelect}
       from internships
       order by id desc
     `);
 
-    const internships = result.rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      company: row.company,
-      gmail: row.company_email,
-      companyEmail: row.company_email,
-      category: row.category,
-      type: row.employment_type,
-      jobType: row.employment_type,
-      employmentType: row.employment_type,
-      location: row.location,
-      description: row.description,
-      deadline: row.deadline,
-      created_at: row.created_at,
-    }));
+    const internships = result.rows.map((row) =>
+      mapInternshipRow(
+        {
+          ...row,
+          [schema.emailColumn]: row.company_email_value,
+          ...(schema.employmentTypeColumn
+            ? { [schema.employmentTypeColumn]: row.employment_type_value }
+            : {})
+        },
+        schema
+      )
+    );
 
     res.status(200).json(internships);
   } catch (error) {
@@ -689,6 +761,10 @@ app.get("/api/internships", async (req, res) => {
 app.get("/api/internships/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const schema = await getInternshipSchema();
+    const employmentTypeSelect = schema.employmentTypeColumn
+      ? `, ${schema.employmentTypeColumn} AS employment_type_value`
+      : "";
 
     const result = await pool.query(
       `
@@ -696,13 +772,13 @@ app.get("/api/internships/:id", async (req, res) => {
         id,
         title,
         company,
-        company_email,
+        ${schema.emailColumn} AS company_email_value,
         category,
-        employment_type,
         location,
         description,
         deadline,
         created_at
+        ${employmentTypeSelect}
       from internships
       where id = $1
       `,
@@ -715,21 +791,18 @@ app.get("/api/internships/:id", async (req, res) => {
 
     const row = result.rows[0];
 
-    res.status(200).json({
-      id: row.id,
-      title: row.title,
-      company: row.company,
-      gmail: row.company_email,
-      companyEmail: row.company_email,
-      category: row.category,
-      type: row.employment_type,
-      jobType: row.employment_type,
-      employmentType: row.employment_type,
-      location: row.location,
-      description: row.description,
-      deadline: row.deadline,
-      created_at: row.created_at,
-    });
+    res.status(200).json(
+      mapInternshipRow(
+        {
+          ...row,
+          [schema.emailColumn]: row.company_email_value,
+          ...(schema.employmentTypeColumn
+            ? { [schema.employmentTypeColumn]: row.employment_type_value }
+            : {})
+        },
+        schema
+      )
+    );
   } catch (error) {
     console.error("Error fetching internship by ID:", error);
     res.status(500).json({ message: "Failed to fetch internship details." });
@@ -757,6 +830,7 @@ app.post("/api/internships", async (req, res) => {
     const resolvedEmail = companyEmail || gmail || null;
     const resolvedEmploymentType =
       employmentType || jobType || job_type || type || null;
+    const schema = await getInternshipSchema();
 
     if (!title || !company || !resolvedEmail) {
       return res.status(400).json({
@@ -764,50 +838,46 @@ app.post("/api/internships", async (req, res) => {
       });
     }
 
+    const insertColumns = [
+      "title",
+      "company",
+      schema.emailColumn,
+      "category",
+      "location",
+      "description",
+      "deadline"
+    ];
+    const insertValues = [
+      title,
+      company,
+      resolvedEmail,
+      category || null,
+      location || null,
+      description || null,
+      deadline || null
+    ];
+
+    if (schema.employmentTypeColumn) {
+      insertColumns.splice(4, 0, schema.employmentTypeColumn);
+      insertValues.splice(4, 0, resolvedEmploymentType);
+    }
+
+    const insertPlaceholders = insertColumns.map((_, index) => `$${index + 1}`).join(", ");
+
     const result = await pool.query(
       `
       insert into internships (
-        title,
-        company,
-        company_email,
-        category,
-        employment_type,
-        location,
-        description,
-        deadline
+        ${insertColumns.join(", ")}
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8)
+      values (${insertPlaceholders})
       returning *
       `,
-      [
-        title,
-        company,
-        resolvedEmail,
-        category || null,
-        resolvedEmploymentType,
-        location || null,
-        description || null,
-        deadline || null
-      ]
+      insertValues
     );
 
     const row = result.rows[0];
 
-    res.status(201).json({
-      id: row.id,
-      title: row.title,
-      company: row.company,
-      gmail: row.company_email,
-      companyEmail: row.company_email,
-      category: row.category,
-      type: row.employment_type,
-      jobType: row.employment_type,
-      employmentType: row.employment_type,
-      location: row.location,
-      description: row.description,
-      deadline: row.deadline,
-      created_at: row.created_at,
-    });
+    res.status(201).json(mapInternshipRow(row, schema));
   } catch (error) {
     console.error("Error creating internship:", error);
     res.status(500).json({ message: "Failed to create internship." });
@@ -836,6 +906,7 @@ app.put("/api/internships/:id", async (req, res) => {
     const resolvedEmail = companyEmail || gmail || null;
     const resolvedEmploymentType =
       employmentType || jobType || job_type || type || null;
+    const schema = await getInternshipSchema();
 
     if (!title || !company || !resolvedEmail) {
       return res.status(400).json({
@@ -843,32 +914,45 @@ app.put("/api/internships/:id", async (req, res) => {
       });
     }
 
+    const updateAssignments = [
+      "title = $1",
+      "company = $2",
+      `${schema.emailColumn} = $3`,
+      "category = $4",
+      "location = $5",
+      "description = $6",
+      "deadline = $7"
+    ];
+    const updateValues = [
+      title,
+      company,
+      resolvedEmail,
+      category || null,
+      location || null,
+      description || null,
+      deadline || null
+    ];
+
+    if (schema.employmentTypeColumn) {
+      updateAssignments.splice(4, 0, `${schema.employmentTypeColumn} = $5`);
+      updateValues.splice(4, 0, resolvedEmploymentType);
+      updateAssignments[5] = "location = $6";
+      updateAssignments[6] = "description = $7";
+      updateAssignments[7] = "deadline = $8";
+    }
+
+    const idPlaceholder = `$${updateValues.length + 1}`;
+    updateValues.push(id);
+
     const result = await pool.query(
       `
       update internships
       set
-        title = $1,
-        company = $2,
-        company_email = $3,
-        category = $4,
-        employment_type = $5,
-        location = $6,
-        description = $7,
-        deadline = $8
-      where id = $9
+        ${updateAssignments.join(",\n        ")}
+      where id = ${idPlaceholder}
       returning *
       `,
-      [
-        title,
-        company,
-        resolvedEmail,
-        category || null,
-        resolvedEmploymentType,
-        location || null,
-        description || null,
-        deadline || null,
-        id
-      ]
+      updateValues
     );
 
     if (result.rows.length === 0) {
@@ -877,21 +961,7 @@ app.put("/api/internships/:id", async (req, res) => {
 
     const row = result.rows[0];
 
-    res.status(200).json({
-      id: row.id,
-      title: row.title,
-      company: row.company,
-      gmail: row.company_email,
-      companyEmail: row.company_email,
-      category: row.category,
-      type: row.employment_type,
-      jobType: row.employment_type,
-      employmentType: row.employment_type,
-      location: row.location,
-      description: row.description,
-      deadline: row.deadline,
-      created_at: row.created_at,
-    });
+    res.status(200).json(mapInternshipRow(row, schema));
   } catch (error) {
     console.error("Error updating internship:", error);
     res.status(500).json({ message: "Failed to update internship." });
@@ -923,73 +993,6 @@ app.delete("/api/internships/:id", async (req, res) => {
   }
 });
 
-app.post("/api/internship-notifications", async (req, res) => {
-  try {
-    const {
-      studentName,
-      studentEmail,
-      company,
-      companyEmail,
-      internshipTitle,
-      category,
-      jobType,
-      location,
-      deadline,
-      description,
-      notes
-    } = req.body;
-
-    if (!studentName || !studentEmail || !company || !companyEmail || !internshipTitle) {
-      return res.status(400).json({
-        message: "Missing required fields."
-      });
-    }
-
-    const result = await pool.query(
-      `
-      insert into internship_notifications (
-        student_name,
-        student_email,
-        company,
-        company_email,
-        internship_title,
-        category,
-        employment_type,
-        location,
-        deadline,
-        description,
-        notes
-      )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      returning *
-      `,
-      [
-        studentName,
-        studentEmail,
-        company,
-        companyEmail,
-        internshipTitle,
-        category || null,
-        jobType || null,
-        location || null,
-        deadline || null,
-        description || null,
-        notes || null
-      ]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    console.error("Error creating internship notification:", error);
-    res.status(500).json({ message: "Failed to submit internship notification." });
-  }
-});
-
-// Start the Express server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-// POST internship notification from student form
 app.post("/api/internship-notifications", async (req, res) => {
   try {
     const {
@@ -1079,4 +1082,9 @@ app.get("/api/internship-notifications", async (req, res) => {
     console.error("Error fetching internship notifications:", error);
     res.status(500).json({ message: "Failed to fetch internship notifications." });
   }
+});
+
+// Start the Express server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
