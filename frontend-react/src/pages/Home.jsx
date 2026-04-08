@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import VideoCard from "../components/VideoCard";
 import { Link } from "react-router-dom";
+import usePersonalization from "../hooks/usePersonalization.js";
 
 function Home({ currentUser, authLoading }) {
   const [videos, setVideos] = useState([]);
@@ -10,6 +11,9 @@ function Home({ currentUser, authLoading }) {
   const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { isBookmarked, toggleBookmark } = usePersonalization();
+  const dashboardTarget = currentUser ? "/dashboard" : "/login";
+  const dashboardLabel = currentUser ? "Open Dashboard" : "Login for Dashboard";
 
   useEffect(() => {
     fetchVideos();
@@ -27,13 +31,11 @@ function Home({ currentUser, authLoading }) {
     }
   };
 
-  // Create a unique subject list for the subject filter dropdown
   const subjectOptions = [
     "All Subjects",
     ...new Set(videos.map((video) => video.subject).filter(Boolean))
   ];
 
-  // Filter videos by both search term and selected subject
   const filteredVideos = videos.filter((video) => {
     const matchesSearch = video.title
       .toLowerCase()
@@ -81,7 +83,6 @@ function Home({ currentUser, authLoading }) {
       </header>
 
       <div className="controls">
-        {/* Search videos by title */}
         <div className="control-group search-group">
           <label className="control-label">Search</label>
           <input
@@ -93,7 +94,6 @@ function Home({ currentUser, authLoading }) {
           />
         </div>
 
-        {/* Subject filter dropdown with label */}
         <div className="control-group">
           <label className="control-label">Subject</label>
           <select
@@ -109,7 +109,6 @@ function Home({ currentUser, authLoading }) {
           </select>
         </div>
 
-        {/* Sort dropdown with label */}
         <div className="control-group">
           <label className="control-label">Sort By</label>
           <select
@@ -127,12 +126,17 @@ function Home({ currentUser, authLoading }) {
           </select>
         </div>
 
-        {/* Upload button for admin use only */}
-        {!authLoading && currentUser?.role === "admin" && (
-          <Link to="/upload" className="upload-link">
-            + Upload New Video
+        <div className="home-action-links">
+          <Link to={dashboardTarget} className="dashboard-link">
+            {dashboardLabel}
           </Link>
-        )}
+
+          {!authLoading && currentUser?.role === "admin" && (
+            <Link to="/upload" className="upload-link">
+              + Upload New Video
+            </Link>
+          )}
+        </div>
       </div>
 
       {loading && <p>Loading videos...</p>}
@@ -140,7 +144,12 @@ function Home({ currentUser, authLoading }) {
 
       <div className="video-list">
         {sortedVideos.map((video) => (
-          <VideoCard key={video.id} video={video} />
+          <VideoCard
+            key={video.id}
+            video={video}
+            isBookmarked={isBookmarked(video.id)}
+            onToggleBookmark={() => toggleBookmark(video.id)}
+          />
         ))}
       </div>
     </div>

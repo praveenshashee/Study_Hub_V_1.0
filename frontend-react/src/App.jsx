@@ -1,6 +1,7 @@
-import { Routes, Route } from "react-router-dom";
+﻿import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import VideoDetails from "./pages/VideoDetails";
 import UploadVideo from "./pages/UploadVideo";
 import EditVideo from "./pages/EditVideo";
@@ -75,13 +76,27 @@ function App() {
           element={<Home currentUser={currentUser} authLoading={authLoading} />}
         />
         <Route
+          path="/dashboard"
+          element={<Dashboard currentUser={currentUser} authLoading={authLoading} />}
+        />
+        <Route
+          path="/profile"
+          element={<Dashboard currentUser={currentUser} authLoading={authLoading} />}
+        />
+        <Route
           path="/video/:id"
           element={<VideoDetails currentUser={currentUser} authLoading={authLoading} />}
         />
         <Route path="/upload" element={<UploadVideo />} />
         <Route path="/edit/:id" element={<EditVideo />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/login"
+          element={<Login onAuthSuccess={setCurrentUser} />}
+        />
+        <Route
+          path="/signup"
+          element={<Signup onAuthSuccess={setCurrentUser} />}
+        />
         <Route
           path="/internships"
           element={<InternshipsHome currentUser={currentUser} />}

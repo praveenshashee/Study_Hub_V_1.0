@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
+import BookmarkButton from "../components/BookmarkButton.jsx";
+import usePersonalization from "../hooks/usePersonalization.js";
+import { recordRecentlyViewedVideo } from "../utils/personalization.js";
 
 const recentViewTracker = {};
 
 function VideoDetails({ currentUser, authLoading }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isBookmarked, toggleBookmark } = usePersonalization();
 
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +42,6 @@ function VideoDetails({ currentUser, authLoading }) {
     try {
       let response;
 
-      // Skip only very recent duplicate calls (like React StrictMode dev remount)
       if (lastViewTime && now - lastViewTime < 500) {
         response = await api.get(`/api/videos/${id}`);
       } else {
@@ -47,6 +50,7 @@ function VideoDetails({ currentUser, authLoading }) {
       }
 
       setVideo(response.data);
+      recordRecentlyViewedVideo(response.data.id);
     } catch (err) {
       console.error("Failed to load video details:", err);
       setError("Failed to load video details");
@@ -55,7 +59,6 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
-  // Load the current user's rating for this video (if any)
   const loadUserRating = async () => {
     try {
       const response = await api.get(`/api/videos/${id}/my-rating`);
@@ -66,7 +69,6 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
-  // Handle user rating submission
   const handleRateVideo = async (selectedRating) => {
     setRatingLoading(true);
     setRatingMessage("");
@@ -87,7 +89,6 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
-  // Handle video deletion (admin only)
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this video?");
 
@@ -118,7 +119,7 @@ function VideoDetails({ currentUser, authLoading }) {
 
   return (
     <div className="details-container">
-      <Link to="/" className="back-link">← Back to Home</Link>
+      <Link to="/" className="back-link">&lt; Back to Home</Link>
 
       <h1>{video.title}</h1>
       <p><strong>Subject:</strong> {video.subject}</p>
@@ -157,7 +158,7 @@ function VideoDetails({ currentUser, authLoading }) {
                 onClick={() => handleRateVideo(star)}
                 disabled={ratingLoading}
               >
-                ★
+                {"★"}
               </button>
             ))}
           </div>
@@ -215,17 +216,25 @@ function VideoDetails({ currentUser, authLoading }) {
         </ul>
       </div>
 
-      {!authLoading && currentUser?.role === "admin" && (
-        <div className="page-actions">
-          <Link to={`/edit/${video.id}`} className="edit-link">
-            Edit Video
-          </Link>
+      <div className="page-actions">
+        <BookmarkButton
+          variant="inline"
+          isBookmarked={isBookmarked(video.id)}
+          onToggle={() => toggleBookmark(video.id)}
+        />
 
-          <button onClick={handleDelete} className="delete-button">
-            Delete Video
-          </button>
-        </div>
-      )}
+        {!authLoading && currentUser?.role === "admin" && (
+          <>
+            <Link to={`/edit/${video.id}`} className="edit-link">
+              Edit Video
+            </Link>
+
+            <button onClick={handleDelete} className="delete-button">
+              Delete Video
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
