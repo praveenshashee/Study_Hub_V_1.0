@@ -98,7 +98,7 @@ function EditVideo() {
 
   return (
     <div className="form-page-container">
-      <Link to={`/video/${id}`} className="back-link">← Back to Details</Link>
+      <Link to={`/video/${id}`} className="back-link floating-back-link">{"<- Back to Details"}</Link>
 
       <header className="page-header form-header">
         <h1>Edit Video</h1>

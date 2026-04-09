@@ -1,24 +1,35 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
+import CloudinaryUploadButton from "../components/CloudinaryUploadButton";
 
-function Signup() {
+function Signup({ refreshCurrentUser }) {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
-        password: ""
+        password: "",
+        profileImageUrl: ""
     });
 
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [imageUploadMessage, setImageUploadMessage] = useState("");
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const handleProfileImageUploadSuccess = (uploadedImage) => {
+        setFormData((prev) => ({
+            ...prev,
+            profileImageUrl: uploadedImage.secure_url || ""
+        }));
+        setImageUploadMessage("Profile image uploaded successfully.");
     };
 
     const handleSubmit = async (e) => {
@@ -28,6 +39,7 @@ function Signup() {
 
         try {
             const response = await api.post("/api/auth/signup", formData);
+            await refreshCurrentUser?.();
 
             setSuccessMessage(response.data.message || "Signup successful");
 
@@ -80,6 +92,43 @@ function Signup() {
                         onChange={handleChange}
                         required
                     />
+
+                    <label>Profile Image URL (Optional)</label>
+                    <div className="auth-upload-row">
+                        <CloudinaryUploadButton
+                            onUploadSuccess={handleProfileImageUploadSuccess}
+                            buttonLabel="Upload Profile Image"
+                            resourceType="image"
+                            className="auth-upload-btn"
+                        />
+
+                        <input
+                            type="url"
+                            name="profileImageUrl"
+                            placeholder="Or paste an image link manually"
+                            value={formData.profileImageUrl}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <p className="auth-field-hint">
+                        This is optional. You can upload directly or paste an image link, and it will appear in your profile menu.
+                    </p>
+
+                    {imageUploadMessage && (
+                        <p className="success-text auth-upload-feedback">{imageUploadMessage}</p>
+                    )}
+
+                    {formData.profileImageUrl && (
+                        <div className="auth-image-preview-card">
+                            <span className="auth-image-preview-label">Profile preview</span>
+                            <img
+                                src={formData.profileImageUrl}
+                                alt="Profile preview"
+                                className="auth-image-preview"
+                            />
+                        </div>
+                    )}
 
                     <button type="submit">Sign Up</button>
                 </form>

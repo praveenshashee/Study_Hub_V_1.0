@@ -1,5 +1,6 @@
 import { NavLink, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import UserAvatar from "./UserAvatar";
 
 function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -20,10 +21,6 @@ function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
-
-    const avatarText = currentUser?.fullName
-        ? currentUser.fullName.slice(0, 2).toUpperCase()
-        : "GU";
 
     return (
         <nav className="landing-navbar">
@@ -47,22 +44,24 @@ function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
                         type="button"
                         className="profile-icon-btn"
                         onClick={() => setMenuOpen((prev) => !prev)}
+                        aria-expanded={menuOpen}
+                        aria-label="Open profile menu"
                     >
-                        <span
-                            className={`profile-avatar-circle ${currentUser ? "" : "guest-avatar"}`}
-                        >
-                            {avatarText}
-                        </span>
+                        <UserAvatar
+                            currentUser={currentUser}
+                            className="profile-avatar-circle"
+                        />
                     </button>
 
-                    {menuOpen && (
-                        <div className="profile-dropdown">
+                    <div
+                        className={`profile-dropdown ${menuOpen ? "open" : ""}`}
+                        aria-hidden={!menuOpen}
+                    >
                             <div className="profile-dropdown-header">
-                                <div
-                                    className={`profile-dropdown-avatar ${currentUser ? "" : "guest-avatar"}`}
-                                >
-                                    {avatarText}
-                                </div>
+                                <UserAvatar
+                                    currentUser={currentUser}
+                                    className="profile-dropdown-avatar"
+                                />
 
                                 <div className="profile-dropdown-user">
                                     <strong>{currentUser ? currentUser.fullName : "Guest User"}</strong>
@@ -82,9 +81,14 @@ function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
                                     <button
                                         type="button"
                                         className="logout-btn"
-                                        onClick={() => {
+                                        onClick={async () => {
+                                            const didLogout = await onLogout();
+
+                                            if (!didLogout) {
+                                                return;
+                                            }
+
                                             setMenuOpen(false);
-                                            onLogout();
                                         }}
                                     >
                                         Logout
@@ -101,7 +105,6 @@ function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
                                 </>
                             )}
                         </div>
-                    )}
                 </div>
             </div>
         </nav>

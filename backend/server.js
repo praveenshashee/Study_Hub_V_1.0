@@ -63,6 +63,72 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+const supportedProfileImageColumns = [
+  "profile_image_url",
+  "avatar_url",
+  "profile_image"
+];
+
+let profileImageColumnPromise;
+
+async function getProfileImageColumn() {
+  if (!profileImageColumnPromise) {
+    profileImageColumnPromise = pool.query(
+      `
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name = ANY($1::text[])
+      ORDER BY array_position($1::text[], column_name)
+      LIMIT 1
+      `,
+      [supportedProfileImageColumns]
+    )
+      .then((result) => result.rows[0]?.column_name || null)
+      .catch((error) => {
+        console.error("Failed to inspect users table profile image column:", error);
+        return null;
+      });
+  }
+
+  return profileImageColumnPromise;
+}
+
+function normalizeProfileImageUrl(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  try {
+    const parsedUrl = new URL(trimmedValue);
+
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return null;
+    }
+
+    return parsedUrl.toString();
+  } catch {
+    return null;
+  }
+}
+
+function buildSessionUser(user, profileImageColumn) {
+  return {
+    id: user.id,
+    fullName: user.full_name,
+    email: user.email,
+    role: user.role,
+    profileImageUrl: profileImageColumn ? user[profileImageColumn] || null : null
+  };
+}
+
 
 
 /* ==================================================
@@ -72,10 +138,16 @@ function requireAdmin(req, res, next) {
 //sign-up route
 app.post("/api/auth/signup", async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { fullName, email, password, profileImageUrl } = req.body;
 
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const resolvedProfileImageUrl = normalizeProfileImageUrl(profileImageUrl);
+
+    if (profileImageUrl && !resolvedProfileImageUrl) {
+      return res.status(400).json({ message: "Profile image URL must be a valid http or https link" });
     }
 
     const existingUser = await pool.query(
@@ -88,29 +160,45 @@ app.post("/api/auth/signup", async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const profileImageColumn = await getProfileImageColumn();
 
-    const result = await pool.query(
-      `
-      INSERT INTO users (full_name, email, password_hash, role)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, full_name, email, role, created_at
-      `,
-      [
-        fullName,
-        email,
-        passwordHash,
-        "user"
-      ]
-    );
+    const result = profileImageColumn
+      ? await pool.query(
+        `
+        INSERT INTO users (full_name, email, password_hash, role, ${profileImageColumn})
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, full_name, email, role, created_at, ${profileImageColumn}
+        `,
+        [
+          fullName,
+          email,
+          passwordHash,
+          "user",
+          resolvedProfileImageUrl
+        ]
+      )
+      : await pool.query(
+        `
+        INSERT INTO users (full_name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, full_name, email, role, created_at
+        `,
+        [
+          fullName,
+          email,
+          passwordHash,
+          "user"
+        ]
+      );
 
     const user = result.rows[0];
+    const sessionUser = buildSessionUser(user, profileImageColumn);
 
-    req.session.user = {
-      id: user.id,
-      fullName: user.full_name,
-      email: user.email,
-      role: user.role
-    };
+    if (!profileImageColumn) {
+      sessionUser.profileImageUrl = resolvedProfileImageUrl;
+    }
+
+    req.session.user = sessionUser;
 
     res.status(201).json({
       message: "Signup successful",
@@ -141,6 +229,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     const user = result.rows[0];
+    const profileImageColumn = await getProfileImageColumn();
 
     const passwordMatches = await bcrypt.compare(password, user.password_hash);
 
@@ -148,12 +237,7 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    req.session.user = {
-      id: user.id,
-      fullName: user.full_name,
-      email: user.email,
-      role: user.role
-    };
+    req.session.user = buildSessionUser(user, profileImageColumn);
 
     res.status(200).json({
       message: "Login successful",

@@ -1,26 +1,41 @@
 import { useEffect, useRef } from "react";
 
-function CloudinaryUploadButton({ onUploadSuccess }) {
+const DEFAULT_UPLOAD_SOURCES = ["local", "url", "camera"];
+
+function CloudinaryUploadButton({
+  onUploadSuccess,
+  buttonLabel = "Upload File to Cloudinary",
+  cloudName = "de9xr5nq4",
+  uploadPreset = "studyhub_videos",
+  resourceType = "video",
+  sources = DEFAULT_UPLOAD_SOURCES,
+  className = ""
+}) {
   const widgetRef = useRef(null);
+  const onUploadSuccessRef = useRef(onUploadSuccess);
+
+  useEffect(() => {
+    onUploadSuccessRef.current = onUploadSuccess;
+  }, [onUploadSuccess]);
 
   useEffect(() => {
     if (!window.cloudinary) return;
 
     widgetRef.current = window.cloudinary.createUploadWidget(
       {
-        cloudName: "de9xr5nq4",
-        uploadPreset: "studyhub_videos",
-        resourceType: "video",
+        cloudName,
+        uploadPreset,
+        resourceType,
         multiple: false,
-        sources: ["local", "url", "camera"]
+        sources
       },
       (error, result) => {
         if (!error && result && result.event === "success") {
-          onUploadSuccess(result.info);
+          onUploadSuccessRef.current?.(result.info);
         }
       }
     );
-  }, [onUploadSuccess]);
+  }, [cloudName, resourceType, sources, uploadPreset]);
 
   const handleOpenWidget = () => {
     if (widgetRef.current) {
@@ -29,8 +44,8 @@ function CloudinaryUploadButton({ onUploadSuccess }) {
   };
 
   return (
-    <button type="button" onClick={handleOpenWidget}>
-      Upload Video to Cloudinary
+    <button type="button" onClick={handleOpenWidget} className={className}>
+      {buttonLabel}
     </button>
   );
 }

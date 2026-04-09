@@ -51,12 +51,20 @@ function App() {
   };
 
   const handleLogout = async () => {
+    const confirmLogout = window.confirm("Are you sure you want to log out?");
+
+    if (!confirmLogout) {
+      return false;
+    }
+
     try {
       await api.post("/api/auth/logout");
       setCurrentUser(null);
+      return true;
     } catch (error) {
       console.error("Failed to log out:", error);
       alert("Failed to log out");
+      return false;
     }
   };
 
@@ -99,8 +107,8 @@ function App() {
         />
         <Route path="/upload" element={<UploadVideo />} />
         <Route path="/edit/:id" element={<EditVideo />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login refreshCurrentUser={fetchCurrentUser} />} />
+        <Route path="/signup" element={<Signup refreshCurrentUser={fetchCurrentUser} />} />
         <Route
           path="/internships"
           element={<InternshipsHome currentUser={currentUser} />}
