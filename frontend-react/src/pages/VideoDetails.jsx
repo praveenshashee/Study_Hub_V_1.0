@@ -55,7 +55,6 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
-  // Load the current user's rating for this video (if any)
   const loadUserRating = async () => {
     try {
       const response = await api.get(`/api/videos/${id}/my-rating`);
@@ -66,7 +65,6 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
-  // Handle user rating submission
   const handleRateVideo = async (selectedRating) => {
     setRatingLoading(true);
     setRatingMessage("");
@@ -87,7 +85,6 @@ function VideoDetails({ currentUser, authLoading }) {
     }
   };
 
-  // Handle video deletion (admin only)
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this video?");
 
@@ -118,7 +115,7 @@ function VideoDetails({ currentUser, authLoading }) {
 
   return (
     <div className="details-container">
-      <Link to="/home" className="back-link">← Back to Home</Link>
+      <Link to="/home" className="back-link floating-back-link">{"<- Back to Home"}</Link>
 
       <h1>{video.title}</h1>
       <p><strong>Subject:</strong> {video.subject}</p>
@@ -157,7 +154,7 @@ function VideoDetails({ currentUser, authLoading }) {
                 onClick={() => handleRateVideo(star)}
                 disabled={ratingLoading}
               >
-                ★
+                {"*"}
               </button>
             ))}
           </div>

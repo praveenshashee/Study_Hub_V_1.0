@@ -172,10 +172,63 @@ body {
   }
 
   /* Home page */
+  .home-shell {
+    padding: 10px 16px 36px;
+  }
+
+  .home-hero {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .home-hero-content h1 {
+    font-size: 2.35rem;
+  }
+
+  .home-subtitle {
+    font-size: 0.98rem;
+  }
+
+  .home-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .home-hero-visual {
+    min-height: 390px;
+  }
+
+  .home-highlight-panel {
+    width: 100%;
+  }
+
+  .home-floating-card-1 {
+    top: 18px;
+    left: 0;
+  }
+
+  .home-floating-card-2 {
+    right: 6px;
+    bottom: 26px;
+  }
+
+  .home-floating-card-3 {
+    top: 158px;
+    right: 0;
+  }
+
+  .home-filter-panel {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
   .controls {
     flex-direction: column;
     align-items: stretch;
     padding: 0 16px;
+  }
+
+  .home-controls {
+    padding: 0;
   }
 
   .control-group {
@@ -190,6 +243,14 @@ body {
   .upload-link {
     width: 100%;
     align-self: stretch;
+  }
+
+  .home-upload-link {
+    margin-left: 0;
+  }
+
+  .home-results-bar {
+    align-items: flex-start;
   }
 
   .video-list {
@@ -208,6 +269,14 @@ body {
   .delete-button,
   .material-link {
     width: 100%;
+  }
+
+  .floating-back-link {
+    top: auto;
+    bottom: 18px;
+    left: 16px;
+    right: 16px;
+    width: auto;
   }
 
   .video-form button {
@@ -866,6 +935,8 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
 }
 
 .guest-avatar {
@@ -873,7 +944,8 @@ body {
 }
 
 .profile-icon-btn:hover .profile-avatar-circle {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-md);
 }
 
 .profile-dropdown {
@@ -890,6 +962,22 @@ body {
   flex-direction: column;
   gap: 6px;
   z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.98);
+  transform-origin: top right;
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease,
+    visibility 0.24s ease;
+}
+
+.profile-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 .profile-dropdown-header {
@@ -944,6 +1032,13 @@ body {
 
 .logout-btn {
   font-family: inherit;
+}
+
+.profile-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* ==================================================
@@ -1044,6 +1139,68 @@ body {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+.auth-field-hint {
+  margin: -2px 0 6px;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.auth-image-preview-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-image-preview-label {
+  color: var(--primary);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.auth-image-preview {
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-upload-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-upload-btn {
+  width: fit-content;
+  min-width: 220px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  font-size: 0.94rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-upload-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.auth-upload-feedback {
+  margin-top: 2px;
 }
 
 .auth-inline-link {
@@ -1148,6 +1305,16 @@ body {
   margin-bottom: 24px;
 }
 
+.floating-back-link {
+  position: fixed;
+  top: 84px;
+  left: 18px;
+  z-index: 120;
+  margin-bottom: 0;
+  width: auto;
+  box-shadow: var(--shadow-md);
+}
+
 .edit-link {
   padding: 12px 20px;
 }
@@ -1183,6 +1350,137 @@ body {
    HOME PAGE
    Used in: Home.jsx
    ================================================== */
+.home-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 18px 24px 56px;
+}
+
+.home-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.home-hero-content {
+  animation: landingFadeUp 0.7s ease;
+}
+
+.home-badge {
+  margin-bottom: 18px;
+}
+
+.home-hero-content h1 {
+  margin: 0 0 18px;
+  font-size: clamp(2.4rem, 4.7vw, 4.3rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: var(--text);
+}
+
+.home-subtitle {
+  max-width: 620px;
+  margin: 0 0 26px;
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+}
+
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 14px;
+  max-width: 760px;
+}
+
+.home-stat-card strong {
+  font-size: 1.65rem;
+  margin-bottom: 2px;
+}
+
+.home-hero-visual {
+  position: relative;
+  min-height: 470px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: landingFloatIn 0.9s ease;
+}
+
+.home-glow-one {
+  top: 30px;
+  right: 30px;
+}
+
+.home-glow-two {
+  bottom: 30px;
+  left: 10px;
+}
+
+.home-highlight-panel {
+  width: min(460px, 92%);
+}
+
+.home-highlight-panel h3 {
+  font-size: 1.5rem;
+}
+
+.home-feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.home-feature-pills span,
+.home-topic-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(31, 59, 99, 0.08);
+  color: var(--primary);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.home-floating-card {
+  max-width: 180px;
+}
+
+.home-floating-card-1 {
+  top: 58px;
+  left: 10px;
+}
+
+.home-floating-card-2 {
+  bottom: 82px;
+  right: 0;
+  animation-delay: 0.7s;
+}
+
+.home-floating-card-3 {
+  top: 210px;
+  right: 24px;
+  animation-delay: 1.2s;
+}
+
+.home-content {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.home-filter-panel {
+  margin-bottom: 26px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 28px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
 .controls {
   max-width: 960px;
   margin: 0 auto 32px;
@@ -1192,6 +1490,14 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+}
+
+.home-controls {
+  max-width: none;
+  margin: 0 0 18px;
+  padding: 0;
+  justify-content: flex-start;
+  align-items: end;
 }
 
 .control-group {
@@ -1251,6 +1557,62 @@ body {
   box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
 }
 
+.home-upload-link {
+  margin-left: auto;
+}
+
+.home-results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid rgba(31, 59, 99, 0.1);
+}
+
+.home-results-text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.96rem;
+}
+
+.home-results-text strong {
+  color: var(--primary);
+}
+
+.home-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.home-feedback {
+  text-align: center;
+}
+
+.home-empty-state {
+  margin: 30px auto 10px;
+  max-width: 640px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  border-radius: 22px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+}
+
+.home-empty-state h3 {
+  margin: 0 0 8px;
+  color: var(--primary);
+}
+
+.home-empty-state p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
 /* ==================================================
    VIDEO CARD GRID - HOME PAGE
    Used in: VideoCard.jsx
@@ -1259,6 +1621,10 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 24px;
+}
+
+.home-video-list {
+  gap: 28px;
 }
 
 .video-card-link {
@@ -1270,35 +1636,36 @@ body {
 .video-card {
   background: var(--card-bg);
   border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: var(--shadow-md);
   transition: transform var(--transition), box-shadow var(--transition);
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 .video-card-link:hover .video-card {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
 }
 
 .video-thumb-wrap {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
-  margin-bottom: 14px;
+  border-radius: 18px;
+  margin-bottom: 16px;
 }
 
 .video-card-link:hover .video-thumb {
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 .video-thumb {
   width: 100%;
-  height: 190px;
+  height: 210px;
   object-fit: cover;
   display: block;
   transition: transform var(--transition);
@@ -1321,13 +1688,15 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
 }
 
 .video-card h3 {
   margin: 0;
-  font-size: 1.08rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--text);
+  line-height: 1.35;
 }
 
 .video-meta {
@@ -1350,6 +1719,7 @@ body {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin: 0;
+  margin-top: auto;
 }
 
 /* ==================================================

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 
-function Login() {
+function Login({ refreshCurrentUser }) {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -27,6 +27,7 @@ function Login() {
 
         try {
             const response = await api.post("/api/auth/login", formData);
+            await refreshCurrentUser?.();
 
             setSuccessMessage(response.data.message || "Login successful");
 

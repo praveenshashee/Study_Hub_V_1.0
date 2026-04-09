@@ -60,7 +60,7 @@ function UploadVideo() {
 
   return (
     <div className="form-page-container">
-      <Link to="/home" className="back-link">← Back to Home</Link>
+      <Link to="/home" className="back-link floating-back-link">{"<- Back to Home"}</Link>
 
       <header className="page-header form-header">
         <h1>Upload New Video</h1>
@@ -102,7 +102,10 @@ function UploadVideo() {
           <p className="section-help">Upload the main video through Cloudinary. The video link and preview thumbnail will be generated automatically.</p>
 
           <label>Upload Video</label>
-          <CloudinaryUploadButton onUploadSuccess={handleVideoUploadSuccess} />
+          <CloudinaryUploadButton
+            onUploadSuccess={handleVideoUploadSuccess}
+            buttonLabel="Upload Video to Cloudinary"
+          />
 
           <label>Video URL</label>
           <input
