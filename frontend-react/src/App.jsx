@@ -118,7 +118,10 @@ function App() {
           element={<InternshipsHome currentUser={currentUser} />}
         />
         <Route path="/internships/add" element={<AddInternshipPage />} />
-        <Route path="/internships/details/:id" element={<InternshipDetailsPage />} />
+        <Route
+          path="/internships/details/:id"
+          element={<InternshipDetailsPage currentUser={currentUser} />}
+        />
         <Route path="/internships/update/:id" element={<UpdateInternshipPage />} />
         <Route path="/internships/delete/:id" element={<DeleteInternshipPage />} />
         <Route path="/internships/notify" element={<NotifyInternPage />} />

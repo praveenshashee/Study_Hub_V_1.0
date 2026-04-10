@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../../services/api";
 
-function InternshipDetailsPage() {
+function InternshipDetailsPage({ currentUser }) {
   const { id } = useParams();
   const [internship, setInternship] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +75,10 @@ function InternshipDetailsPage() {
           <p><strong>Company:</strong> {internship.company}</p>
           <p><strong>Gmail:</strong> {internship.gmail || "Not provided"}</p>
           <p><strong>Category:</strong> {internship.category}</p>
-          <p><strong>Type:</strong> {internship.type || internship.jobType || internship.job_type || "Internship"}</p>
+          <p>
+            <strong>Type:</strong>{" "}
+            {internship.type || internship.jobType || internship.job_type || "Internship"}
+          </p>
           <p><strong>Location:</strong> {internship.location || "Not specified"}</p>
           <p>
             <strong>Deadline:</strong>{" "}
@@ -90,21 +93,23 @@ function InternshipDetailsPage() {
           <p>{internship.description || "No description available."}</p>
         </div>
 
-        <div className="internship-details-actions">
-          <Link
-            to={`/internships/update/${internshipId}`}
-            className="action-btn edit-btn"
-          >
-            Update Internship
-          </Link>
+        {currentUser?.role === "admin" && (
+          <div className="internship-details-actions">
+            <Link
+              to={`/internships/update/${internshipId}`}
+              className="action-btn edit-btn"
+            >
+              Update Internship
+            </Link>
 
-          <Link
-            to={`/internships/delete/${internshipId}`}
-            className="action-btn delete-btn"
-          >
-            Delete Internship
-          </Link>
-        </div>
+            <Link
+              to={`/internships/delete/${internshipId}`}
+              className="action-btn delete-btn"
+            >
+              Delete Internship
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
