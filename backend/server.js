@@ -9,7 +9,7 @@ import pool from "./db.js";
 import cloudinary from "./cloudinary.js";
 
 const app = express();
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 
 // Middleware configuration
 app.use(cors({
@@ -22,7 +22,7 @@ app.use(express.json());
 
 // Configure session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || "studyhub_fallback_secret",
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -41,13 +41,10 @@ app.get("/api/auth/debug-session", (req, res) => {
   });
 });
 
-
-
 /* ==================================================
-   Authentification and Authorization Middleware for Admins & Users
+   Authentication and Authorization Middleware
    ================================================== */
 
-// Middleware to check if user is authenticated
 function requireAuth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -55,7 +52,6 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// Middleware to check if user is an admin
 function requireAdmin(req, res, next) {
   if (!req.session.user || req.session.user.role !== "admin") {
     return res.status(403).json({ message: "Forbidden" });
@@ -129,13 +125,11 @@ function buildSessionUser(user, profileImageColumn) {
   };
 }
 
-
-
 /* ==================================================
    Sign-up, Login, Logout
    ================================================== */
 
-//sign-up route
+// Sign-up route
 app.post("/api/auth/signup", async (req, res) => {
   try {
     const { fullName, email, password, profileImageUrl } = req.body;
@@ -147,7 +141,9 @@ app.post("/api/auth/signup", async (req, res) => {
     const resolvedProfileImageUrl = normalizeProfileImageUrl(profileImageUrl);
 
     if (profileImageUrl && !resolvedProfileImageUrl) {
-      return res.status(400).json({ message: "Profile image URL must be a valid http or https link" });
+      return res.status(400).json({
+        message: "Profile image URL must be a valid http or https link"
+      });
     }
 
     const existingUser = await pool.query(
@@ -164,32 +160,32 @@ app.post("/api/auth/signup", async (req, res) => {
 
     const result = profileImageColumn
       ? await pool.query(
-        `
-        INSERT INTO users (full_name, email, password_hash, role, ${profileImageColumn})
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, full_name, email, role, created_at, ${profileImageColumn}
-        `,
-        [
-          fullName,
-          email,
-          passwordHash,
-          "user",
-          resolvedProfileImageUrl
-        ]
-      )
+          `
+          INSERT INTO users (full_name, email, password_hash, role, ${profileImageColumn})
+          VALUES ($1, $2, $3, $4, $5)
+          RETURNING id, full_name, email, role, created_at, ${profileImageColumn}
+          `,
+          [
+            fullName,
+            email,
+            passwordHash,
+            "user",
+            resolvedProfileImageUrl
+          ]
+        )
       : await pool.query(
-        `
-        INSERT INTO users (full_name, email, password_hash, role)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, full_name, email, role, created_at
-        `,
-        [
-          fullName,
-          email,
-          passwordHash,
-          "user"
-        ]
-      );
+          `
+          INSERT INTO users (full_name, email, password_hash, role)
+          VALUES ($1, $2, $3, $4)
+          RETURNING id, full_name, email, role, created_at
+          `,
+          [
+            fullName,
+            email,
+            passwordHash,
+            "user"
+          ]
+        );
 
     const user = result.rows[0];
     const sessionUser = buildSessionUser(user, profileImageColumn);
@@ -210,7 +206,7 @@ app.post("/api/auth/signup", async (req, res) => {
   }
 });
 
-//login route
+// Login route
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -249,7 +245,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-//logout route
+// Logout route
 app.post("/api/auth/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -271,12 +267,11 @@ app.get("/api/auth/me", (req, res) => {
   res.status(200).json({ user: req.session.user });
 });
 
-
 /* ==================================================
    Rating Routes for Videos
    ================================================== */
 
-// Rate a video (create or update rating)
+// Rate a video
 app.post("/api/videos/:id/rate", requireAuth, async (req, res) => {
   try {
     const videoId = Number(req.params.id);
@@ -358,7 +353,7 @@ app.post("/api/videos/:id/rate", requireAuth, async (req, res) => {
   }
 });
 
-// Get the current user's rating for a specific video
+// Get current user's rating for a video
 app.get("/api/videos/:id/my-rating", requireAuth, async (req, res) => {
   try {
     const videoId = Number(req.params.id);
@@ -386,12 +381,11 @@ app.get("/api/videos/:id/my-rating", requireAuth, async (req, res) => {
   }
 });
 
-
 /* ==================================================
-    Video Routes (CRUD) with PostgreSQL
+   Video Routes (CRUD)
    ================================================== */
 
-// Get all videos from PostgreSQL and map column names for frontend compatibility
+// Get all videos
 app.get("/api/videos", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM videos ORDER BY id ASC");
@@ -416,7 +410,7 @@ app.get("/api/videos", async (req, res) => {
   }
 });
 
-// Get one video by id from PostgreSQL and map column names for frontend compatibility
+// Get one video by id
 app.get("/api/videos/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -453,7 +447,7 @@ app.get("/api/videos/:id", async (req, res) => {
   }
 });
 
-// Increase view count and return frontend-friendly field names
+// Increase view count
 app.patch("/api/videos/:id/view", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -493,7 +487,7 @@ app.patch("/api/videos/:id/view", async (req, res) => {
   }
 });
 
-// Add a new video to PostgreSQL
+// Add a new video
 app.post("/api/videos", requireAdmin, async (req, res) => {
   try {
     const {
@@ -581,7 +575,7 @@ app.post("/api/videos", requireAdmin, async (req, res) => {
   }
 });
 
-// Update an existing video in PostgreSQL
+// Update a video
 app.put("/api/videos/:id", requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -702,7 +696,7 @@ app.put("/api/videos/:id", requireAdmin, async (req, res) => {
   }
 });
 
-// Delete one video from PostgreSQL by id
+// Delete a video
 app.delete("/api/videos/:id", requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -727,11 +721,11 @@ app.delete("/api/videos/:id", requireAdmin, async (req, res) => {
    INTERNSHIP ROUTES
    ================================================== */
 
-// GET all internships
+// Get all internships
 app.get("/api/internships", async (req, res) => {
   try {
     const result = await pool.query(`
-      select
+      SELECT
         id,
         title,
         company,
@@ -742,8 +736,8 @@ app.get("/api/internships", async (req, res) => {
         description,
         deadline,
         created_at
-      from internships
-      order by id desc
+      FROM internships
+      ORDER BY id DESC
     `);
 
     const internships = result.rows.map((row) => ({
@@ -759,7 +753,7 @@ app.get("/api/internships", async (req, res) => {
       location: row.location,
       description: row.description,
       deadline: row.deadline,
-      created_at: row.created_at,
+      created_at: row.created_at
     }));
 
     res.status(200).json(internships);
@@ -769,14 +763,14 @@ app.get("/api/internships", async (req, res) => {
   }
 });
 
-// GET single internship by ID
+// Get single internship by ID
 app.get("/api/internships/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
     const result = await pool.query(
       `
-      select
+      SELECT
         id,
         title,
         company,
@@ -787,8 +781,8 @@ app.get("/api/internships/:id", async (req, res) => {
         description,
         deadline,
         created_at
-      from internships
-      where id = $1
+      FROM internships
+      WHERE id = $1
       `,
       [id]
     );
@@ -812,7 +806,7 @@ app.get("/api/internships/:id", async (req, res) => {
       location: row.location,
       description: row.description,
       deadline: row.deadline,
-      created_at: row.created_at,
+      created_at: row.created_at
     });
   } catch (error) {
     console.error("Error fetching internship by ID:", error);
@@ -820,8 +814,8 @@ app.get("/api/internships/:id", async (req, res) => {
   }
 });
 
-// CREATE internship
-app.post("/api/internships", async (req, res) => {
+// Create internship (ADMIN ONLY)
+app.post("/api/internships", requireAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -850,7 +844,7 @@ app.post("/api/internships", async (req, res) => {
 
     const result = await pool.query(
       `
-      insert into internships (
+      INSERT INTO internships (
         title,
         company,
         company_email,
@@ -860,8 +854,8 @@ app.post("/api/internships", async (req, res) => {
         description,
         deadline
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8)
-      returning *
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
       `,
       [
         title,
@@ -890,7 +884,7 @@ app.post("/api/internships", async (req, res) => {
       location: row.location,
       description: row.description,
       deadline: row.deadline,
-      created_at: row.created_at,
+      created_at: row.created_at
     });
   } catch (error) {
     console.error("Error creating internship:", error);
@@ -898,8 +892,8 @@ app.post("/api/internships", async (req, res) => {
   }
 });
 
-// UPDATE internship
-app.put("/api/internships/:id", async (req, res) => {
+// Update internship (ADMIN ONLY)
+app.put("/api/internships/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -929,8 +923,8 @@ app.put("/api/internships/:id", async (req, res) => {
 
     const result = await pool.query(
       `
-      update internships
-      set
+      UPDATE internships
+      SET
         title = $1,
         company = $2,
         company_email = $3,
@@ -939,8 +933,8 @@ app.put("/api/internships/:id", async (req, res) => {
         location = $6,
         description = $7,
         deadline = $8
-      where id = $9
-      returning *
+      WHERE id = $9
+      RETURNING *
       `,
       [
         title,
@@ -974,7 +968,7 @@ app.put("/api/internships/:id", async (req, res) => {
       location: row.location,
       description: row.description,
       deadline: row.deadline,
-      created_at: row.created_at,
+      created_at: row.created_at
     });
   } catch (error) {
     console.error("Error updating internship:", error);
@@ -982,16 +976,16 @@ app.put("/api/internships/:id", async (req, res) => {
   }
 });
 
-// DELETE internship
-app.delete("/api/internships/:id", async (req, res) => {
+// Delete internship (ADMIN ONLY)
+app.delete("/api/internships/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
     const result = await pool.query(
       `
-      delete from internships
-      where id = $1
-      returning *
+      DELETE FROM internships
+      WHERE id = $1
+      RETURNING *
       `,
       [id]
     );
@@ -1007,73 +1001,11 @@ app.delete("/api/internships/:id", async (req, res) => {
   }
 });
 
-app.post("/api/internship-notifications", async (req, res) => {
-  try {
-    const {
-      studentName,
-      studentEmail,
-      company,
-      companyEmail,
-      internshipTitle,
-      category,
-      jobType,
-      location,
-      deadline,
-      description,
-      notes
-    } = req.body;
+/* ==================================================
+   INTERNSHIP NOTIFICATIONS
+   ================================================== */
 
-    if (!studentName || !studentEmail || !company || !companyEmail || !internshipTitle) {
-      return res.status(400).json({
-        message: "Missing required fields."
-      });
-    }
-
-    const result = await pool.query(
-      `
-      insert into internship_notifications (
-        student_name,
-        student_email,
-        company,
-        company_email,
-        internship_title,
-        category,
-        employment_type,
-        location,
-        deadline,
-        description,
-        notes
-      )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      returning *
-      `,
-      [
-        studentName,
-        studentEmail,
-        company,
-        companyEmail,
-        internshipTitle,
-        category || null,
-        jobType || null,
-        location || null,
-        deadline || null,
-        description || null,
-        notes || null
-      ]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    console.error("Error creating internship notification:", error);
-    res.status(500).json({ message: "Failed to submit internship notification." });
-  }
-});
-
-// Start the Express server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-// POST internship notification from student form
+// Student submits internship notification
 app.post("/api/internship-notifications", async (req, res) => {
   try {
     const {
@@ -1136,8 +1068,100 @@ app.post("/api/internship-notifications", async (req, res) => {
   }
 });
 
-// GET all internship notifications for admin table
-app.get("/api/internship-notifications", async (req, res) => {
+// Approve internship notification and add to internships table
+app.post("/api/internship-notifications/:id/approve", requireAdmin, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { id } = req.params;
+
+    await client.query("BEGIN");
+
+    const notificationResult = await client.query(
+      `
+      SELECT
+        id,
+        company,
+        company_email,
+        internship_title,
+        category,
+        employment_type,
+        location,
+        deadline,
+        description,
+        status
+      FROM internship_notifications
+      WHERE id = $1
+      FOR UPDATE
+      `,
+      [id]
+    );
+
+    if (notificationResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Internship notification not found." });
+    }
+
+    const notification = notificationResult.rows[0];
+
+    if (notification.status === "approved") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "This notification is already approved." });
+    }
+
+    const internshipInsertResult = await client.query(
+      `
+      INSERT INTO internships (
+        title,
+        company,
+        company_email,
+        category,
+        employment_type,
+        location,
+        description,
+        deadline
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+      `,
+      [
+        notification.internship_title,
+        notification.company,
+        notification.company_email,
+        notification.category || null,
+        notification.employment_type || null,
+        notification.location || null,
+        notification.description || null,
+        notification.deadline || null
+      ]
+    );
+
+    await client.query(
+      `
+      UPDATE internship_notifications
+      SET status = 'approved'
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    await client.query("COMMIT");
+
+    res.status(200).json({
+      message: "Internship notification approved and added to internships.",
+      internship: internshipInsertResult.rows[0]
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error approving internship notification:", error);
+    res.status(500).json({ message: "Failed to approve internship notification." });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin gets all internship notifications
+app.get("/api/internship-notifications", requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
@@ -1153,6 +1177,7 @@ app.get("/api/internship-notifications", async (req, res) => {
         deadline,
         description,
         notes,
+        status,
         created_at
       FROM internship_notifications
       ORDER BY id DESC
@@ -1163,4 +1188,134 @@ app.get("/api/internship-notifications", async (req, res) => {
     console.error("Error fetching internship notifications:", error);
     res.status(500).json({ message: "Failed to fetch internship notifications." });
   }
+});
+
+/* ==================================================
+   EVENTS ROUTES
+   ================================================== */
+
+// Get all events
+app.get("/api/events", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        title,
+        organizer,
+        location,
+        date,
+        description,
+        created_at
+      FROM events
+      ORDER BY id DESC
+    `);
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ message: "Failed to fetch events." });
+  }
+});
+
+// Get single event
+app.get("/api/events/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `SELECT * FROM events WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching event:", error);
+    res.status(500).json({ message: "Failed to fetch event." });
+  }
+});
+
+// Create event (ADMIN ONLY)
+app.post("/api/events", requireAdmin, async (req, res) => {
+  try {
+    const { title, organizer, location, date, description } = req.body;
+
+    if (!title || !organizer) {
+      return res.status(400).json({ message: "Title and organizer required" });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO events (title, organizer, location, date, description)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [title, organizer, location, date, description]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ message: "Failed to create event" });
+  }
+});
+
+// Update event (ADMIN ONLY)
+app.put("/api/events/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, organizer, location, date, description } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE events
+      SET title = $1,
+          organizer = $2,
+          location = $3,
+          date = $4,
+          description = $5
+      WHERE id = $6
+      RETURNING *
+      `,
+      [title, organizer, location, date, description, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ message: "Failed to update event" });
+  }
+});
+
+// Delete event (ADMIN ONLY)
+app.delete("/api/events/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `DELETE FROM events WHERE id = $1 RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ message: "Failed to delete event" });
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -17,6 +17,10 @@ import InternshipNotificationsPage from "./pages/Internship/InternshipNotificati
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import api from "./services/api.js";
+import EventsHome from "./pages/Events/EventsHome";
+import AddEventPage from "./pages/Events/AddEventPage";
+import UpdateEventPage from "./pages/Events/UpdateEventPage";
+import DeleteEventPage from "./pages/Events/DeleteEventPage";
 
 function App() {
   const location = useLocation();
@@ -119,6 +123,13 @@ function App() {
         <Route path="/internships/delete/:id" element={<DeleteInternshipPage />} />
         <Route path="/internships/notify" element={<NotifyInternPage />} />
         <Route path="/internships/notifications" element={<InternshipNotificationsPage />} />
+        <Route
+          path="/events"
+          element={<EventsHome currentUser={currentUser} />}
+        />
+        <Route path="/events/add" element={<AddEventPage currentUser={currentUser} />} />
+        <Route path="/events/update/:id" element={<UpdateEventPage currentUser={currentUser} />} />
+        <Route path="/events/delete/:id" element={<DeleteEventPage currentUser={currentUser} />} />
       </Routes>
     </>
   );
