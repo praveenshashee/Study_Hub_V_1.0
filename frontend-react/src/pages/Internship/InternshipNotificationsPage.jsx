@@ -6,6 +6,7 @@ function InternshipNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
     fetchNotifications();
@@ -33,6 +34,23 @@ function InternshipNotificationsPage() {
     }
   };
 
+  const handleApprove = async (id) => {
+    try {
+      setActionMessage("");
+      await api.post(`/api/internship-notifications/${id}/approve`);
+      setActionMessage("Notification approved and added to internships.");
+      fetchNotifications();
+    } catch (err) {
+      console.error("Failed to approve internship notification:", err);
+
+      const backendMessage =
+        err?.response?.data?.message ||
+        "Failed to approve internship notification.";
+
+      setActionMessage(backendMessage);
+    }
+  };
+
   return (
     <div className="home-container internship-notifications-page">
       <div className="page-header">
@@ -44,8 +62,8 @@ function InternshipNotificationsPage() {
         Back to Internships
       </Link>
 
+      {actionMessage && <p className="page-message">{actionMessage}</p>}
       {loading && <p className="page-message">Loading notifications...</p>}
-
       {!loading && error && <p className="error-text">{error}</p>}
 
       {!loading && !error && notifications.length === 0 && (
@@ -67,9 +85,8 @@ function InternshipNotificationsPage() {
                 <th>Job Type</th>
                 <th>Location</th>
                 <th>Deadline</th>
-                <th>Description</th>
-                <th>Notes</th>
-                <th>Created At</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -89,12 +106,19 @@ function InternshipNotificationsPage() {
                       ? new Date(item.deadline).toLocaleDateString()
                       : "—"}
                   </td>
-                  <td>{item.description || "—"}</td>
-                  <td>{item.notes || "—"}</td>
+                  <td>{item.status || "pending"}</td>
                   <td>
-                    {item.created_at
-                      ? new Date(item.created_at).toLocaleString()
-                      : "—"}
+                    {item.status !== "approved" ? (
+                      <button
+                        type="button"
+                        className="action-btn edit-btn"
+                        onClick={() => handleApprove(item.id)}
+                      >
+                        Approve
+                      </button>
+                    ) : (
+                      <span>Approved</span>
+                    )}
                   </td>
                 </tr>
               ))}
