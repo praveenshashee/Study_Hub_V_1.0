@@ -1,110 +1,152 @@
-# StudyHub Project
+# Study Hub
 
-## Overview
+Study Hub is a local full-stack student support platform for academic videos, study materials, internships, events, user profiles, comments, and admin analytics.
 
-StudyHub is a student support platform built to help students access academic video content and related study materials in one place.
+## Project Structure
 
-This current implementation includes a React-based frontend for the video module, an Express backend, PostgreSQL database integration, Cloudinary video hosting, and Google Drive links for supporting study documents.
+- `frontend-react/` - Vite React frontend
+- `backend/` - Express API server
+- `old-frontend/` - older frontend kept only as reference
 
----
+## Main Features
 
-## Current Project Structure
+- Session-based login and signup
+- User/admin role support
+- Protected frontend routes
+- Video library with search, filters, views, ratings, and materials
+- Cloudinary video upload and profile image upload
+- Video comments, user edit/delete, and admin replies
+- Admin comment alert page for unreplied learner comments
+- Profile page with profile editing and password change
+- Dashboard with live backend analytics
+- Internship and event modules
+- Light/dark theme
+- Mobile navbar for smaller screens
 
-- `frontend-react/` - Current React frontend
-- `backend/` - Express backend and API routes
-- `frontend/studyhub/` - Old plain HTML/CSS/JS frontend kept for reference or backup
+## Tech Stack
 
----
-
-## Main Technologies Used
-
-### Frontend
-- React (Vite)
+Frontend:
+- React
+- Vite
 - React Router
 - Axios
 - CSS
 
-### Backend
+Backend:
 - Node.js
-- Express.js
-- PostgreSQL
+- Express
+- PostgreSQL/Supabase
+- express-session
+- bcrypt
 - Cloudinary
-- dotenv
 
-### External Storage / Hosting
-- Cloudinary - video hosting and thumbnail handling
-- Google Drive - lab sheet and model paper links
+## Requirements
 
----
+- Node.js
+- npm
+- Supabase/PostgreSQL database
+- Cloudinary upload preset/account
 
-## Current Features Implemented
+## Environment Setup
 
-### Video Module
-- Display all videos
-- Search videos
-- Sort videos
-- View video details
-- Embedded video player inside details page
-- View count increment
-- Upload new videos
-- Edit video details
-- Replace uploaded video
-- Delete videos
-- Real Cloudinary video upload
-- Automatic video thumbnail generation
-- Clean replacement flow with old Cloudinary video deletion
+Create `backend/.env` with the required database/session/Cloudinary values used by your backend.
 
-### Materials
-- Lab Sheet link support
-- Model Paper link support
-- Google Drive document links open in a new tab
-- Materials can be optional
-- "Not available" message shown when a material is missing
+Typical values include:
 
-### Admin Workflow
-- Upload video content
-- Edit video details
-- Replace video with a new Cloudinary upload
-- Delete videos
-- Add or update Lab Sheet and Model Paper links
+```env
+DATABASE_URL=your_supabase_postgres_connection_string
+SESSION_SECRET=your_session_secret
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
 
----
+The frontend API base URL is currently local:
 
-## Important Notes
+```js
+http://localhost:5001
+```
 
-- `frontend-react/` is the current active frontend.
-- `frontend/studyhub/` is the older plain HTML/CSS/JS version and is no longer the main implementation.
-- Videos are stored using Cloudinary.
-- Lab sheets and model papers are currently stored externally using Google Drive links.
-- Authentication, signup/login, and role-based access control are planned for later integration.
+## Install Dependencies
 
----
-
-## Backend Files
-
-- `server.js` - Express server and API routes
-- `db.js` - PostgreSQL database connection
-- `cloudinary.js` - Cloudinary backend configuration
-- `.env` - Environment variables for backend secrets
-
----
-
-## Frontend Pages
-
-### React Frontend
-- `Home` - Video listing page
-- `VideoDetails` - Video details page with embedded player and materials
-- `UploadVideo` - Upload page for new videos
-- `EditVideo` - Edit and replace existing videos
-
----
-
-## How to Run
-
-### Backend
-1. Open terminal in `backend`
-2. Run:
+From the project root:
 
 ```bash
 npm install
+npm install --prefix backend
+npm install --prefix frontend-react
+```
+
+## Run Locally
+
+Run both frontend and backend together from the project root:
+
+```bash
 npm run dev
+```
+
+Or run them separately:
+
+```bash
+cd backend
+npm run dev
+```
+
+```bash
+cd frontend-react
+npm run dev
+```
+
+Open the frontend at:
+
+```txt
+http://localhost:5173
+```
+
+Backend runs at:
+
+```txt
+http://localhost:5001
+```
+
+## Demo Accounts
+
+Use accounts that exist in your Supabase `users` table.
+
+Example local demo account recently reset:
+
+```txt
+User ID: 7
+Password: abey123
+```
+
+Add your own admin/user demo emails here:
+
+```txt
+Admin email:
+Admin password:
+
+User email:
+User password:
+```
+
+## Useful Checks
+
+Frontend production build:
+
+```bash
+cd frontend-react
+npm run build
+```
+
+Backend syntax check:
+
+```bash
+node --check backend/server.js
+```
+
+## Notes
+
+- This project is currently intended for local/demo use.
+- `frontend-react/dist/` is generated by `npm run build` and is not needed in source control.
+- The removed `frontend-react/vercel.json` was only from an old frontend deployment attempt.
