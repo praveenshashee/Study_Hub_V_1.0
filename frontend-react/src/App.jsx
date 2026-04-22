@@ -16,6 +16,7 @@ import NotifyInternPage from "./pages/Internship/NotifyInternPage";
 import InternshipNotificationsPage from "./pages/Internship/InternshipNotificationsPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Profile from "./pages/Profile";
 import api from "./services/api.js";
 import EventsHome from "./pages/Events/EventsHome";
 import AddEventPage from "./pages/Events/AddEventPage";
@@ -113,6 +114,10 @@ function App() {
         <Route path="/edit/:id" element={<EditVideo />} />
         <Route path="/login" element={<Login refreshCurrentUser={fetchCurrentUser} />} />
         <Route path="/signup" element={<Signup refreshCurrentUser={fetchCurrentUser} />} />
+        <Route
+          path="/profile"
+          element={<Profile currentUser={currentUser} authLoading={authLoading} />}
+        />
         <Route
           path="/internships"
           element={<InternshipsHome currentUser={currentUser} />}
