@@ -166,7 +166,6 @@ function Dashboard({ currentUser, authLoading }) {
         <DashboardStat label="Videos" value={stats.totalVideos} note={`${stats.totalViews || 0} total views`} />
         <DashboardStat label="Avg Rating" value={stats.averageRating} note="Across video library" />
         <DashboardStat label="Internships" value={stats.totalInternships} note={`${stats.activeInternships || 0} active`} />
-        <DashboardStat label="Events" value={stats.totalEvents} note={`${stats.upcomingEvents || 0} upcoming`} />
         {isAdmin && (
           <>
             <DashboardStat label="Users" value={stats.totalUsers} note="Registered accounts" />
@@ -249,22 +248,6 @@ function Dashboard({ currentUser, authLoading }) {
               <strong>{item.title}</strong>
               <span>{item.company} · {item.category || "General"}</span>
             </Link>
-          )}
-        />
-
-        <DashboardList
-          title="Upcoming Events"
-          label="Campus"
-          emptyText="No events available yet."
-          items={recommendations.events || []}
-          renderItem={(item) => (
-            <div className="dashboard-list-item">
-              <strong>{item.title}</strong>
-              <span>
-                {item.date ? new Date(item.date).toLocaleDateString() : "Date TBA"} ·{" "}
-                {item.location || "Location TBA"}
-              </span>
-            </div>
           )}
         />
 

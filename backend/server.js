@@ -299,18 +299,6 @@ function mapDashboardInternship(row) {
   };
 }
 
-function mapDashboardEvent(row) {
-  return {
-    id: row.id,
-    title: row.title,
-    organizer: row.organizer,
-    location: row.location,
-    date: row.date,
-    description: row.description,
-    createdAt: row.created_at
-  };
-}
-
 app.get("/api/dashboard", requireAuth, async (req, res) => {
   try {
     const isAdmin = req.session.user.role === "admin";
@@ -323,8 +311,7 @@ app.get("/api/dashboard", requireAuth, async (req, res) => {
       subjectPopularityResult,
       internshipInterestResult,
       recommendedVideosResult,
-      recommendedInternshipsResult,
-      recommendedEventsResult
+      recommendedInternshipsResult
     ] = await Promise.all([
       pool.query(`
         SELECT
@@ -421,29 +408,7 @@ app.get("/api/dashboard", requireAuth, async (req, res) => {
           deadline,
           created_at
         FROM internships
-        WHERE deadline IS NULL OR deadline >= CURRENT_DATE
-        ORDER BY
-          CASE WHEN deadline IS NULL THEN 1 ELSE 0 END,
-          deadline ASC,
-          id DESC
-        LIMIT 6
-      `),
-      pool.query(`
-        SELECT
-          id,
-          title,
-          organizer,
-          location,
-          date,
-          description,
-          created_at
-        FROM events
-        WHERE date IS NULL OR date >= CURRENT_DATE
-        ORDER BY
-          CASE WHEN date IS NULL THEN 1 ELSE 0 END,
-          date ASC,
-          id DESC
-        LIMIT 4
+        LIMIT 3
       `)
     ]);
 
@@ -497,8 +462,7 @@ app.get("/api/dashboard", requireAuth, async (req, res) => {
       })),
       recommendations: {
         videos: recommendedVideosResult.rows.map(mapDashboardVideo),
-        internships: recommendedInternshipsResult.rows.map(mapDashboardInternship),
-        events: recommendedEventsResult.rows.map(mapDashboardEvent)
+        internships: recommendedInternshipsResult.rows.map(mapDashboardInternship)
       }
     });
   } catch (error) {
