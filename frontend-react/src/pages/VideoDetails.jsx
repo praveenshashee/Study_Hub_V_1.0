@@ -17,6 +17,14 @@ function formatCommentDate(value) {
   });
 }
 
+function wasCommentEdited(comment) {
+  if (!comment?.createdAt || !comment?.updatedAt) {
+    return false;
+  }
+
+  return Math.abs(new Date(comment.updatedAt) - new Date(comment.createdAt)) > 1000;
+}
+
 function VideoDetails({ currentUser, authLoading }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -388,6 +396,7 @@ function VideoDetails({ currentUser, authLoading }) {
                             <strong>{comment.author?.fullName || "Study Hub User"}</strong>
                             <span>
                               {comment.author?.role || "user"} - {formatCommentDate(comment.createdAt)}
+                              {wasCommentEdited(comment) ? " - edited" : ""}
                             </span>
                           </div>
                         </div>
@@ -397,21 +406,25 @@ function VideoDetails({ currentUser, authLoading }) {
                             {comment.canEdit && (
                               <button
                                 type="button"
+                                className="comment-icon-btn"
                                 onClick={() => handleStartEditComment(comment)}
                                 disabled={commentActionId === comment.id}
+                                aria-label="Edit comment"
                                 title="Edit comment"
                               >
-                                Edit
+                                ✎
                               </button>
                             )}
                             {comment.canDelete && (
                               <button
                                 type="button"
+                                className="comment-icon-btn danger"
                                 onClick={() => handleDeleteComment(comment.id)}
                                 disabled={commentActionId === comment.id}
+                                aria-label="Delete comment"
                                 title="Delete comment"
                               >
-                                Delete
+                                ×
                               </button>
                             )}
                           </div>
@@ -459,6 +472,7 @@ function VideoDetails({ currentUser, authLoading }) {
                                     <strong>{reply.author?.fullName || "Admin"}</strong>
                                     <span>
                                       Admin reply - {formatCommentDate(reply.createdAt)}
+                                      {wasCommentEdited(reply) ? " - edited" : ""}
                                     </span>
                                   </div>
                                 </div>
@@ -468,21 +482,25 @@ function VideoDetails({ currentUser, authLoading }) {
                                     {reply.canEdit && (
                                       <button
                                         type="button"
+                                        className="comment-icon-btn"
                                         onClick={() => handleStartEditComment(reply)}
                                         disabled={commentActionId === reply.id}
+                                        aria-label="Edit reply"
                                         title="Edit reply"
                                       >
-                                        Edit
+                                        ✎
                                       </button>
                                     )}
                                     {reply.canDelete && (
                                       <button
                                         type="button"
+                                        className="comment-icon-btn danger"
                                         onClick={() => handleDeleteComment(reply.id)}
                                         disabled={commentActionId === reply.id}
+                                        aria-label="Delete reply"
                                         title="Delete reply"
                                       >
-                                        Delete
+                                        ×
                                       </button>
                                     )}
                                   </div>

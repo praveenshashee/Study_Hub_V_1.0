@@ -7,6 +7,7 @@ import UploadVideo from "./pages/UploadVideo";
 import EditVideo from "./pages/EditVideo";
 import Navbar from "./components/Navbar";
 import LandingNavbar from "./components/LandingNavbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import InternshipsHome from "./pages/Internship/InternshipsHome";
 import AddInternshipPage from "./pages/Internship/AddInternshipPage";
 import InternshipDetailsPage from "./pages/Internship/InternshipDetailsPage";
@@ -116,49 +117,122 @@ function App() {
           path="/video/:id"
           element={<VideoDetails currentUser={currentUser} authLoading={authLoading} />}
         />
-        <Route path="/upload" element={<UploadVideo />} />
-        <Route path="/edit/:id" element={<EditVideo />} />
+        <Route
+          path="/upload"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <UploadVideo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit/:id"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <EditVideo />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<Login refreshCurrentUser={fetchCurrentUser} />} />
         <Route path="/signup" element={<Signup refreshCurrentUser={fetchCurrentUser} />} />
         <Route
           path="/profile"
           element={
-            <Profile
-              currentUser={currentUser}
-              authLoading={authLoading}
-              refreshCurrentUser={fetchCurrentUser}
-              onSessionEnded={() => setCurrentUser(null)}
-            />
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading}>
+              <Profile
+                currentUser={currentUser}
+                authLoading={authLoading}
+                refreshCurrentUser={fetchCurrentUser}
+                onSessionEnded={() => setCurrentUser(null)}
+              />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/dashboard"
-          element={<Dashboard currentUser={currentUser} authLoading={authLoading} />}
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading}>
+              <Dashboard currentUser={currentUser} authLoading={authLoading} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/comment-alerts"
-          element={<CommentAlerts currentUser={currentUser} authLoading={authLoading} />}
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <CommentAlerts currentUser={currentUser} authLoading={authLoading} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/internships"
           element={<InternshipsHome currentUser={currentUser} />}
         />
-        <Route path="/internships/add" element={<AddInternshipPage />} />
+        <Route
+          path="/internships/add"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <AddInternshipPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/internships/details/:id"
           element={<InternshipDetailsPage currentUser={currentUser} />}
         />
-        <Route path="/internships/update/:id" element={<UpdateInternshipPage />} />
-        <Route path="/internships/delete/:id" element={<DeleteInternshipPage />} />
+        <Route
+          path="/internships/update/:id"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <UpdateInternshipPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/internships/delete/:id"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <DeleteInternshipPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/internships/notify" element={<NotifyInternPage />} />
-        <Route path="/internships/notifications" element={<InternshipNotificationsPage />} />
+        <Route
+          path="/internships/notifications"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <InternshipNotificationsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/events"
           element={<EventsHome currentUser={currentUser} />}
         />
-        <Route path="/events/add" element={<AddEventPage currentUser={currentUser} />} />
-        <Route path="/events/update/:id" element={<UpdateEventPage currentUser={currentUser} />} />
-        <Route path="/events/delete/:id" element={<DeleteEventPage currentUser={currentUser} />} />
+        <Route
+          path="/events/add"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <AddEventPage currentUser={currentUser} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/update/:id"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <UpdateEventPage currentUser={currentUser} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/delete/:id"
+          element={
+            <ProtectedRoute currentUser={currentUser} authLoading={authLoading} requiredRole="admin">
+              <DeleteEventPage currentUser={currentUser} />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
 
       {logoutModalOpen && (

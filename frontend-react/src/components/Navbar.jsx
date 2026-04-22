@@ -4,6 +4,7 @@ import UserAvatar from "./UserAvatar";
 
 function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const profileMenuRef = useRef(null);
 
     useEffect(() => {
@@ -29,14 +30,26 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
                 Study Hub
             </Link>
 
-            <div className="nav-center-links">
-                <NavLink to="/home" end>
+            <button
+                type="button"
+                className="nav-mobile-menu-btn"
+                onClick={() => setMobileNavOpen((prev) => !prev)}
+                aria-expanded={mobileNavOpen}
+                aria-label="Open navigation menu"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div className={`nav-center-links ${mobileNavOpen ? "mobile-open" : ""}`}>
+                <NavLink to="/home" end onClick={() => setMobileNavOpen(false)}>
                     Home
                 </NavLink>
-                <NavLink to="/internships">
+                <NavLink to="/internships" onClick={() => setMobileNavOpen(false)}>
                     Internships
                 </NavLink>
-                <NavLink to="/events">
+                <NavLink to="/events" onClick={() => setMobileNavOpen(false)}>
                     Events
                 </NavLink>
             </div>
