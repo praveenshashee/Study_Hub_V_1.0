@@ -81,14 +81,9 @@ function LandingNavbar({ theme, toggleTheme, currentUser, onLogout }) {
                                     <button
                                         type="button"
                                         className="logout-btn"
-                                        onClick={async () => {
-                                            const didLogout = await onLogout();
-
-                                            if (!didLogout) {
-                                                return;
-                                            }
-
+                                        onClick={() => {
                                             setMenuOpen(false);
+                                            onLogout();
                                         }}
                                     >
                                         Logout

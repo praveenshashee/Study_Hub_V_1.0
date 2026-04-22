@@ -1,11 +1,10 @@
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import UserAvatar from "./UserAvatar";
 
 function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const profileMenuRef = useRef(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -97,15 +96,9 @@ function Navbar({ theme, toggleTheme, currentUser, onLogout }) {
                                     <button
                                         type="button"
                                         className="logout-btn"
-                                        onClick={async () => {
-                                            const didLogout = await onLogout();
-
-                                            if (!didLogout) {
-                                                return;
-                                            }
-
+                                        onClick={() => {
                                             setMenuOpen(false);
-                                            navigate("/");
+                                            onLogout();
                                         }}
                                     >
                                         Logout

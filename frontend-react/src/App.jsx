@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Home from "./pages/Home";
 import LandingPage from "./pages/LandingPage";
@@ -16,6 +16,9 @@ import NotifyInternPage from "./pages/Internship/NotifyInternPage";
 import InternshipNotificationsPage from "./pages/Internship/InternshipNotificationsPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
+import CommentAlerts from "./pages/CommentAlerts";
 import api from "./services/api.js";
 import EventsHome from "./pages/Events/EventsHome";
 import AddEventPage from "./pages/Events/AddEventPage";
@@ -24,6 +27,7 @@ import DeleteEventPage from "./pages/Events/DeleteEventPage";
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("studyhub-theme") || "light";
@@ -31,6 +35,8 @@ function App() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     document.body.classList.remove("light-theme", "dark-theme");
@@ -54,21 +60,22 @@ function App() {
     }
   };
 
-  const handleLogout = async () => {
-    const confirmLogout = window.confirm("Are you sure you want to log out?");
+  const requestLogout = () => {
+    setLogoutModalOpen(true);
+  };
 
-    if (!confirmLogout) {
-      return false;
-    }
-
+  const confirmLogout = async () => {
+    setLogoutLoading(true);
     try {
       await api.post("/api/auth/logout");
       setCurrentUser(null);
-      return true;
+      setLogoutModalOpen(false);
+      navigate("/");
     } catch (error) {
       console.error("Failed to log out:", error);
       alert("Failed to log out");
-      return false;
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
@@ -85,14 +92,14 @@ function App() {
           theme={theme}
           toggleTheme={toggleTheme}
           currentUser={currentUser}
-          onLogout={handleLogout}
+          onLogout={requestLogout}
         />
       ) : (
         <Navbar
           theme={theme}
           toggleTheme={toggleTheme}
           currentUser={currentUser}
-          onLogout={handleLogout}
+          onLogout={requestLogout}
         />
       )}
 
@@ -114,6 +121,25 @@ function App() {
         <Route path="/login" element={<Login refreshCurrentUser={fetchCurrentUser} />} />
         <Route path="/signup" element={<Signup refreshCurrentUser={fetchCurrentUser} />} />
         <Route
+          path="/profile"
+          element={
+            <Profile
+              currentUser={currentUser}
+              authLoading={authLoading}
+              refreshCurrentUser={fetchCurrentUser}
+              onSessionEnded={() => setCurrentUser(null)}
+            />
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={<Dashboard currentUser={currentUser} authLoading={authLoading} />}
+        />
+        <Route
+          path="/comment-alerts"
+          element={<CommentAlerts currentUser={currentUser} authLoading={authLoading} />}
+        />
+        <Route
           path="/internships"
           element={<InternshipsHome currentUser={currentUser} />}
         />
@@ -134,6 +160,35 @@ function App() {
         <Route path="/events/update/:id" element={<UpdateEventPage currentUser={currentUser} />} />
         <Route path="/events/delete/:id" element={<DeleteEventPage currentUser={currentUser} />} />
       </Routes>
+
+      {logoutModalOpen && (
+        <div className="logout-modal-backdrop" role="presentation">
+          <div className="logout-modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title">
+            <span className="logout-modal-mark">SH</span>
+            <h2 id="logout-modal-title">Log out of Study Hub?</h2>
+            <p>Your current session will end, and you can sign back in anytime.</p>
+
+            <div className="logout-modal-actions">
+              <button
+                type="button"
+                className="logout-modal-secondary"
+                onClick={() => setLogoutModalOpen(false)}
+                disabled={logoutLoading}
+              >
+                Stay Logged In
+              </button>
+              <button
+                type="button"
+                className="logout-modal-primary"
+                onClick={confirmLogout}
+                disabled={logoutLoading}
+              >
+                {logoutLoading ? "Logging out..." : "Log Out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
