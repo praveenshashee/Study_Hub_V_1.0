@@ -268,6 +268,246 @@ app.get("/api/auth/me", (req, res) => {
 });
 
 /* ==================================================
+   Dashboard Analytics Routes
+   ================================================== */
+
+function mapDashboardVideo(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    subject: row.subject,
+    description: row.description,
+    thumbnailUrl: row.thumbnail_url,
+    uploader: row.uploader_name,
+    views: Number(row.view_count || 0),
+    rating: Number(row.rating || 0),
+    createdAt: row.created_at
+  };
+}
+
+function mapDashboardInternship(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    company: row.company,
+    companyEmail: row.company_email,
+    category: row.category,
+    type: row.employment_type,
+    location: row.location,
+    deadline: row.deadline,
+    createdAt: row.created_at
+  };
+}
+
+function mapDashboardEvent(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    organizer: row.organizer,
+    location: row.location,
+    date: row.date,
+    description: row.description,
+    createdAt: row.created_at
+  };
+}
+
+app.get("/api/dashboard", requireAuth, async (req, res) => {
+  try {
+    const isAdmin = req.session.user.role === "admin";
+
+    const [
+      videoStatsResult,
+      internshipStatsResult,
+      eventStatsResult,
+      topVideosResult,
+      subjectPopularityResult,
+      internshipInterestResult,
+      recommendedVideosResult,
+      recommendedInternshipsResult,
+      recommendedEventsResult
+    ] = await Promise.all([
+      pool.query(`
+        SELECT
+          COUNT(*)::int AS total_videos,
+          COALESCE(SUM(view_count), 0)::int AS total_views,
+          COALESCE(ROUND(AVG(rating)::numeric, 1), 0) AS average_rating
+        FROM videos
+      `),
+      pool.query(`
+        SELECT
+          COUNT(*)::int AS total_internships,
+          COUNT(*) FILTER (WHERE deadline IS NULL OR deadline >= CURRENT_DATE)::int AS active_internships
+        FROM internships
+      `),
+      pool.query(`
+        SELECT
+          COUNT(*)::int AS total_events,
+          COUNT(*) FILTER (WHERE date IS NULL OR date >= CURRENT_DATE)::int AS upcoming_events
+        FROM events
+      `),
+      pool.query(`
+        SELECT
+          id,
+          title,
+          subject,
+          description,
+          thumbnail_url,
+          uploader_name,
+          view_count,
+          rating,
+          created_at
+        FROM videos
+        ORDER BY view_count DESC, rating DESC, id DESC
+        LIMIT 3
+      `),
+      pool.query(`
+        SELECT
+          COALESCE(NULLIF(subject, ''), 'Uncategorized') AS subject,
+          COUNT(*)::int AS video_count,
+          COALESCE(SUM(view_count), 0)::int AS total_views,
+          COALESCE(ROUND(AVG(rating)::numeric, 1), 0) AS average_rating
+        FROM videos
+        GROUP BY COALESCE(NULLIF(subject, ''), 'Uncategorized')
+        ORDER BY total_views DESC, video_count DESC, subject ASC
+        LIMIT 8
+      `),
+      pool.query(`
+        SELECT
+          category,
+          SUM(source_count)::int AS interest_count
+        FROM (
+          SELECT
+            COALESCE(NULLIF(category, ''), 'Uncategorized') AS category,
+            COUNT(*)::int AS source_count
+          FROM internships
+          GROUP BY COALESCE(NULLIF(category, ''), 'Uncategorized')
+
+          UNION ALL
+
+          SELECT
+            COALESCE(NULLIF(category, ''), 'Uncategorized') AS category,
+            COUNT(*)::int AS source_count
+          FROM internship_notifications
+          GROUP BY COALESCE(NULLIF(category, ''), 'Uncategorized')
+        ) interest_sources
+        GROUP BY category
+        ORDER BY interest_count DESC, category ASC
+        LIMIT 8
+      `),
+      pool.query(`
+        SELECT
+          id,
+          title,
+          subject,
+          description,
+          thumbnail_url,
+          uploader_name,
+          view_count,
+          rating,
+          created_at
+        FROM videos
+        ORDER BY rating DESC, view_count DESC, id DESC
+        LIMIT 6
+      `),
+      pool.query(`
+        SELECT
+          id,
+          title,
+          company,
+          company_email,
+          category,
+          employment_type,
+          location,
+          deadline,
+          created_at
+        FROM internships
+        WHERE deadline IS NULL OR deadline >= CURRENT_DATE
+        ORDER BY
+          CASE WHEN deadline IS NULL THEN 1 ELSE 0 END,
+          deadline ASC,
+          id DESC
+        LIMIT 6
+      `),
+      pool.query(`
+        SELECT
+          id,
+          title,
+          organizer,
+          location,
+          date,
+          description,
+          created_at
+        FROM events
+        WHERE date IS NULL OR date >= CURRENT_DATE
+        ORDER BY
+          CASE WHEN date IS NULL THEN 1 ELSE 0 END,
+          date ASC,
+          id DESC
+        LIMIT 4
+      `)
+    ]);
+
+    const pendingNotificationsResult = isAdmin
+      ? await pool.query(`
+          SELECT COUNT(*)::int AS pending_notifications
+          FROM internship_notifications
+          WHERE status IS NULL OR status != 'approved'
+        `)
+      : { rows: [{ pending_notifications: 0 }] };
+
+    const usersResult = isAdmin
+      ? await pool.query("SELECT COUNT(*)::int AS total_users FROM users")
+      : { rows: [{ total_users: 0 }] };
+
+    const videoStats = videoStatsResult.rows[0] || {};
+    const internshipStats = internshipStatsResult.rows[0] || {};
+    const eventStats = eventStatsResult.rows[0] || {};
+
+    res.status(200).json({
+      viewer: {
+        id: req.session.user.id,
+        fullName: req.session.user.fullName,
+        role: req.session.user.role
+      },
+      generatedAt: new Date().toISOString(),
+      refreshIntervalMs: 300000,
+      stats: {
+        totalVideos: Number(videoStats.total_videos || 0),
+        totalViews: Number(videoStats.total_views || 0),
+        averageRating: Number(videoStats.average_rating || 0),
+        totalInternships: Number(internshipStats.total_internships || 0),
+        activeInternships: Number(internshipStats.active_internships || 0),
+        totalEvents: Number(eventStats.total_events || 0),
+        upcomingEvents: Number(eventStats.upcoming_events || 0),
+        totalUsers: Number(usersResult.rows[0]?.total_users || 0),
+        pendingInternshipNotifications: Number(
+          pendingNotificationsResult.rows[0]?.pending_notifications || 0
+        )
+      },
+      topVideos: topVideosResult.rows.map(mapDashboardVideo),
+      subjectPopularity: subjectPopularityResult.rows.map((row) => ({
+        subject: row.subject,
+        videoCount: Number(row.video_count || 0),
+        totalViews: Number(row.total_views || 0),
+        averageRating: Number(row.average_rating || 0)
+      })),
+      internshipInterest: internshipInterestResult.rows.map((row) => ({
+        category: row.category,
+        interestCount: Number(row.interest_count || 0)
+      })),
+      recommendations: {
+        videos: recommendedVideosResult.rows.map(mapDashboardVideo),
+        internships: recommendedInternshipsResult.rows.map(mapDashboardInternship),
+        events: recommendedEventsResult.rows.map(mapDashboardEvent)
+      }
+    });
+  } catch (error) {
+    console.error("Dashboard analytics error:", error);
+    res.status(500).json({ message: "Failed to load dashboard analytics" });
+  }
+});
+
+/* ==================================================
    Rating Routes for Videos
    ================================================== */
 

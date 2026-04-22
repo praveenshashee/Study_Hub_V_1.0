@@ -17,6 +17,7 @@ import InternshipNotificationsPage from "./pages/Internship/InternshipNotificati
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
 import api from "./services/api.js";
 import EventsHome from "./pages/Events/EventsHome";
 import AddEventPage from "./pages/Events/AddEventPage";
@@ -117,6 +118,10 @@ function App() {
         <Route
           path="/profile"
           element={<Profile currentUser={currentUser} authLoading={authLoading} />}
+        />
+        <Route
+          path="/dashboard"
+          element={<Dashboard currentUser={currentUser} authLoading={authLoading} />}
         />
         <Route
           path="/internships"
