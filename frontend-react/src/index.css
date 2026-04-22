@@ -882,6 +882,33 @@ body {
   color: #fff;
 }
 
+.nav-mobile-menu-btn {
+  display: none;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.nav-mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.nav-mobile-menu-btn span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: white;
+}
+
 /* Right side */
 .nav-right {
   display: flex;
@@ -1039,6 +1066,65 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+@media (max-width: 760px) {
+  .navbar {
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .navbar .nav-brand {
+    font-size: 1.05rem;
+  }
+
+  .nav-mobile-menu-btn {
+    display: inline-flex;
+    order: 2;
+  }
+
+  .nav-center-links {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 14px;
+    right: 14px;
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+  }
+
+  .nav-center-links.mobile-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .nav-center-links a {
+    width: 100%;
+    padding: 11px 12px;
+  }
+
+  .nav-right {
+    margin-left: auto;
+    order: 3;
+    gap: 10px;
+  }
+
+  .theme-toggle-btn,
+  .profile-avatar-circle {
+    width: 38px;
+    height: 38px;
+  }
 }
 
 /* ==================================================
@@ -3650,15 +3736,18 @@ body.dark-theme .comment-alert-card {
 }
 
 .comment-action-row button {
-  min-height: 30px;
-  padding: 6px 9px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--card-solid);
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 1rem;
   font-weight: 800;
+  line-height: 1;
   transition: transform var(--transition), border-color var(--transition), color var(--transition);
 }
 
@@ -3671,6 +3760,11 @@ body.dark-theme .comment-alert-card {
 .comment-action-row button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.comment-action-row button.danger:hover:not(:disabled) {
+  border-color: rgba(220, 38, 38, 0.45);
+  color: var(--error);
 }
 
 .comment-replies {
