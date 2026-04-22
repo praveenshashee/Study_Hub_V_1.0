@@ -110,6 +110,16 @@ function Dashboard({ currentUser, authLoading }) {
         </div>
 
         <div className="dashboard-refresh-panel">
+          {isAdmin && (
+            <Link
+              to="/comment-alerts"
+              className={`dashboard-bell-link ${stats.hasUnrepliedCommentAlerts ? "has-alert" : ""}`}
+              aria-label="Open comment alerts"
+            >
+              <span>Comment alerts</span>
+            </Link>
+          )}
+
           <span>Last updated</span>
           <strong>{generatedAt}</strong>
           <button

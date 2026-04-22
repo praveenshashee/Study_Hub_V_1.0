@@ -424,6 +424,10 @@ app.get("/api/dashboard", requireAuth, async (req, res) => {
       ? await pool.query("SELECT COUNT(*)::int AS total_users FROM users")
       : { rows: [{ total_users: 0 }] };
 
+    const hasUnrepliedCommentAlerts = isAdmin
+      ? (await getUnrepliedCommentAlertCount()) > 0
+      : false;
+
     const videoStats = videoStatsResult.rows[0] || {};
     const internshipStats = internshipStatsResult.rows[0] || {};
     const eventStats = eventStatsResult.rows[0] || {};
@@ -445,6 +449,7 @@ app.get("/api/dashboard", requireAuth, async (req, res) => {
         totalEvents: Number(eventStats.total_events || 0),
         upcomingEvents: Number(eventStats.upcoming_events || 0),
         totalUsers: Number(usersResult.rows[0]?.total_users || 0),
+        hasUnrepliedCommentAlerts,
         pendingInternshipNotifications: Number(
           pendingNotificationsResult.rows[0]?.pending_notifications || 0
         )
@@ -582,6 +587,461 @@ app.get("/api/videos/:id/my-rating", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("Error fetching user rating:", error);
     res.status(500).json({ message: "Failed to fetch user rating" });
+  }
+});
+
+/* ==================================================
+   Video Comment Routes
+   ================================================== */
+
+function mapCommentRow(row) {
+  return {
+    id: row.id,
+    videoId: row.video_id,
+    userId: row.user_id,
+    parentCommentId: row.parent_comment_id,
+    body: row.body,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    canEdit: Boolean(row.can_edit),
+    canDelete: Boolean(row.can_delete),
+    author: {
+      id: row.user_id,
+      fullName: row.full_name || "Deleted User",
+      role: row.role || "user"
+    }
+  };
+}
+
+function mapCommentAlertRow(row) {
+  return {
+    id: row.id,
+    videoId: row.video_id,
+    videoTitle: row.video_title,
+    videoSubject: row.video_subject,
+    body: row.body,
+    createdAt: row.created_at,
+    adminSeenAt: row.admin_seen_at,
+    replyCount: Number(row.reply_count || 0),
+    author: {
+      id: row.user_id,
+      fullName: row.full_name || "Deleted User",
+      role: row.role || "user"
+    }
+  };
+}
+
+function nestCommentRows(rows) {
+  const topLevelComments = [];
+  const commentMap = new Map();
+
+  rows.forEach((row) => {
+    const comment = {
+      ...mapCommentRow(row),
+      replies: []
+    };
+
+    commentMap.set(comment.id, comment);
+
+    if (!comment.parentCommentId) {
+      topLevelComments.push(comment);
+    }
+  });
+
+  rows.forEach((row) => {
+    if (!row.parent_comment_id) {
+      return;
+    }
+
+    const reply = commentMap.get(row.id);
+    const parent = commentMap.get(row.parent_comment_id);
+
+    if (reply && parent) {
+      parent.replies.push(reply);
+    }
+  });
+
+  return topLevelComments;
+}
+
+async function ensureVideoExists(videoId) {
+  const result = await pool.query(
+    "SELECT id FROM videos WHERE id = $1",
+    [videoId]
+  );
+
+  return result.rows.length > 0;
+}
+
+async function getVideoComments(videoId, currentUser) {
+  const result = await pool.query(
+    `
+    SELECT
+      vc.id,
+      vc.video_id,
+      vc.user_id,
+      vc.parent_comment_id,
+      vc.body,
+      vc.created_at,
+      vc.updated_at,
+      u.full_name,
+      u.role,
+      (vc.user_id = $2) AS can_edit,
+      (vc.user_id = $2 OR $3 = 'admin') AS can_delete
+    FROM video_comments vc
+    LEFT JOIN users u ON u.id = vc.user_id
+    WHERE vc.video_id = $1
+    ORDER BY
+      COALESCE(vc.parent_comment_id, vc.id) ASC,
+      vc.parent_comment_id NULLS FIRST,
+      vc.created_at ASC,
+      vc.id ASC
+    `,
+    [videoId, currentUser.id, currentUser.role]
+  );
+
+  return nestCommentRows(result.rows);
+}
+
+async function getUnrepliedCommentAlertCount() {
+  const result = await pool.query(`
+    SELECT COUNT(*)::int AS unreplied_count
+    FROM video_comments vc
+    LEFT JOIN users u ON u.id = vc.user_id
+    WHERE vc.parent_comment_id IS NULL
+      AND COALESCE(u.role, 'user') != 'admin'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM video_comments replies
+        INNER JOIN users reply_users ON reply_users.id = replies.user_id
+        WHERE replies.parent_comment_id = vc.id
+          AND reply_users.role = 'admin'
+      )
+  `);
+
+  return Number(result.rows[0]?.unreplied_count || 0);
+}
+
+app.get("/api/admin/comment-alerts", requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        vc.id,
+        vc.video_id,
+        vc.user_id,
+        vc.body,
+        vc.created_at,
+        vc.admin_seen_at,
+        u.full_name,
+        u.role,
+        v.title AS video_title,
+        v.subject AS video_subject,
+        COUNT(admin_reply_users.id)::int AS reply_count
+      FROM video_comments vc
+      LEFT JOIN users u ON u.id = vc.user_id
+      INNER JOIN videos v ON v.id = vc.video_id
+      LEFT JOIN video_comments admin_replies ON admin_replies.parent_comment_id = vc.id
+      LEFT JOIN users admin_reply_users
+        ON admin_reply_users.id = admin_replies.user_id
+       AND admin_reply_users.role = 'admin'
+      WHERE vc.parent_comment_id IS NULL
+        AND COALESCE(u.role, 'user') != 'admin'
+        AND NOT EXISTS (
+          SELECT 1
+          FROM video_comments replies
+          INNER JOIN users reply_users ON reply_users.id = replies.user_id
+          WHERE replies.parent_comment_id = vc.id
+            AND reply_users.role = 'admin'
+        )
+      GROUP BY
+        vc.id,
+        vc.video_id,
+        vc.user_id,
+        vc.body,
+        vc.created_at,
+        vc.admin_seen_at,
+        u.full_name,
+        u.role,
+        v.title,
+        v.subject
+      ORDER BY
+        vc.created_at DESC,
+        vc.id DESC
+      LIMIT 10
+    `);
+
+    res.status(200).json({
+      hasUnreplied: result.rows.length > 0,
+      alerts: result.rows.map(mapCommentAlertRow)
+    });
+  } catch (error) {
+    console.error("Error fetching admin comment alerts:", error);
+    res.status(500).json({ message: "Failed to fetch comment alerts" });
+  }
+});
+
+app.patch("/api/admin/comment-alerts/mark-seen", requireAdmin, async (req, res) => {
+  try {
+    await pool.query(`
+      UPDATE video_comments vc
+      SET admin_seen_at = CURRENT_TIMESTAMP
+      WHERE vc.parent_comment_id IS NULL
+        AND vc.admin_seen_at IS NULL
+        AND NOT EXISTS (
+          SELECT 1
+          FROM users u
+          WHERE u.id = vc.user_id
+            AND u.role = 'admin'
+        )
+    `);
+
+    res.status(200).json({
+      message: "Comment alerts marked as seen",
+      hasUnreplied: await getUnrepliedCommentAlertCount() > 0
+    });
+  } catch (error) {
+    console.error("Error marking comment alerts as seen:", error);
+    res.status(500).json({ message: "Failed to mark alerts as seen" });
+  }
+});
+
+app.get("/api/videos/:id/comments", requireAuth, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+
+    if (!Number.isInteger(videoId)) {
+      return res.status(400).json({ message: "Invalid video id" });
+    }
+
+    res.status(200).json({
+      comments: await getVideoComments(videoId, req.session.user)
+    });
+  } catch (error) {
+    console.error("Error fetching video comments:", error);
+    res.status(500).json({ message: "Failed to fetch comments" });
+  }
+});
+
+app.post("/api/videos/:id/comments", requireAuth, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+    const userId = req.session.user.id;
+    const body = typeof req.body.body === "string" ? req.body.body.trim() : "";
+
+    if (req.session.user.role === "admin") {
+      return res.status(403).json({ message: "Admins can reply to comments, not create new comment threads" });
+    }
+
+    if (!Number.isInteger(videoId)) {
+      return res.status(400).json({ message: "Invalid video id" });
+    }
+
+    if (!body) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+    if (body.length > 1000) {
+      return res.status(400).json({ message: "Comment must be 1000 characters or fewer" });
+    }
+
+    const videoExists = await ensureVideoExists(videoId);
+
+    if (!videoExists) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO video_comments (video_id, user_id, body)
+      VALUES ($1, $2, $3)
+      `,
+      [videoId, userId, body]
+    );
+
+    res.status(201).json({
+      message: "Comment added",
+      comments: await getVideoComments(videoId, req.session.user)
+    });
+  } catch (error) {
+    console.error("Error adding video comment:", error);
+    res.status(500).json({ message: "Failed to add comment" });
+  }
+});
+
+app.post("/api/videos/:id/comments/:commentId/replies", requireAdmin, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+    const commentId = Number(req.params.commentId);
+    const userId = req.session.user.id;
+    const body = typeof req.body.body === "string" ? req.body.body.trim() : "";
+
+    if (!Number.isInteger(videoId) || !Number.isInteger(commentId)) {
+      return res.status(400).json({ message: "Invalid comment request" });
+    }
+
+    if (!body) {
+      return res.status(400).json({ message: "Reply cannot be empty" });
+    }
+
+    if (body.length > 1000) {
+      return res.status(400).json({ message: "Reply must be 1000 characters or fewer" });
+    }
+
+    const parentResult = await pool.query(
+      `
+      SELECT id
+      FROM video_comments
+      WHERE id = $1
+        AND video_id = $2
+        AND parent_comment_id IS NULL
+      `,
+      [commentId, videoId]
+    );
+
+    if (parentResult.rows.length === 0) {
+      return res.status(404).json({ message: "Parent comment not found" });
+    }
+
+    const existingAdminReplyResult = await pool.query(
+      `
+      SELECT replies.id
+      FROM video_comments replies
+      INNER JOIN users reply_users ON reply_users.id = replies.user_id
+      WHERE replies.parent_comment_id = $1
+        AND replies.video_id = $2
+        AND reply_users.role = 'admin'
+      LIMIT 1
+      `,
+      [commentId, videoId]
+    );
+
+    if (existingAdminReplyResult.rows.length > 0) {
+      return res.status(409).json({
+        message: "This comment already has an admin reply. Edit the existing reply instead."
+      });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO video_comments (video_id, user_id, parent_comment_id, body)
+      VALUES ($1, $2, $3, $4)
+      `,
+      [videoId, userId, commentId, body]
+    );
+
+    res.status(201).json({
+      message: "Reply added",
+      comments: await getVideoComments(videoId, req.session.user)
+    });
+  } catch (error) {
+    console.error("Error adding video comment reply:", error);
+    res.status(500).json({ message: "Failed to add reply" });
+  }
+});
+
+app.put("/api/videos/:id/comments/:commentId", requireAuth, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+    const commentId = Number(req.params.commentId);
+    const userId = req.session.user.id;
+    const body = typeof req.body.body === "string" ? req.body.body.trim() : "";
+
+    if (!Number.isInteger(videoId) || !Number.isInteger(commentId)) {
+      return res.status(400).json({ message: "Invalid comment request" });
+    }
+
+    if (!body) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+    if (body.length > 1000) {
+      return res.status(400).json({ message: "Comment must be 1000 characters or fewer" });
+    }
+
+    const commentResult = await pool.query(
+      `
+      SELECT id, user_id
+      FROM video_comments
+      WHERE id = $1
+        AND video_id = $2
+      `,
+      [commentId, videoId]
+    );
+
+    if (commentResult.rows.length === 0) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (commentResult.rows[0].user_id !== userId) {
+      return res.status(403).json({ message: "You can only edit your own comments" });
+    }
+
+    await pool.query(
+      `
+      UPDATE video_comments
+      SET body = $1,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+        AND video_id = $3
+      `,
+      [body, commentId, videoId]
+    );
+
+    res.status(200).json({
+      message: "Comment updated",
+      comments: await getVideoComments(videoId, req.session.user)
+    });
+  } catch (error) {
+    console.error("Error updating video comment:", error);
+    res.status(500).json({ message: "Failed to update comment" });
+  }
+});
+
+app.delete("/api/videos/:id/comments/:commentId", requireAuth, async (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+    const commentId = Number(req.params.commentId);
+    const userId = req.session.user.id;
+    const isAdmin = req.session.user.role === "admin";
+
+    if (!Number.isInteger(videoId) || !Number.isInteger(commentId)) {
+      return res.status(400).json({ message: "Invalid comment request" });
+    }
+
+    const commentResult = await pool.query(
+      `
+      SELECT id, user_id
+      FROM video_comments
+      WHERE id = $1
+        AND video_id = $2
+      `,
+      [commentId, videoId]
+    );
+
+    if (commentResult.rows.length === 0) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (!isAdmin && commentResult.rows[0].user_id !== userId) {
+      return res.status(403).json({ message: "You can only delete your own comments" });
+    }
+
+    await pool.query(
+      `
+      DELETE FROM video_comments
+      WHERE id = $1
+        AND video_id = $2
+      `,
+      [commentId, videoId]
+    );
+
+    res.status(200).json({
+      message: "Comment deleted",
+      comments: await getVideoComments(videoId, req.session.user)
+    });
+  } catch (error) {
+    console.error("Error deleting video comment:", error);
+    res.status(500).json({ message: "Failed to delete comment" });
   }
 });
 
