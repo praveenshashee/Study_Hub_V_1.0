@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 
 function Login({ refreshCurrentUser }) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -11,7 +12,7 @@ function Login({ refreshCurrentUser }) {
     });
 
     const [error, setError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState(location.state?.message || "");
 
     const handleChange = (e) => {
         setFormData({

@@ -267,6 +267,112 @@ app.get("/api/auth/me", (req, res) => {
   res.status(200).json({ user: req.session.user });
 });
 
+app.put("/api/auth/profile", requireAuth, async (req, res) => {
+  try {
+    const { fullName, profileImageUrl } = req.body;
+    const resolvedFullName = typeof fullName === "string" ? fullName.trim() : "";
+    const resolvedProfileImageUrl = normalizeProfileImageUrl(profileImageUrl);
+
+    if (!resolvedFullName) {
+      return res.status(400).json({ message: "Full name is required" });
+    }
+
+    if (profileImageUrl && !resolvedProfileImageUrl) {
+      return res.status(400).json({
+        message: "Profile image URL must be a valid http or https link"
+      });
+    }
+
+    const profileImageColumn = await getProfileImageColumn();
+
+    const result = profileImageColumn
+      ? await pool.query(
+          `
+          UPDATE users
+          SET full_name = $1,
+              ${profileImageColumn} = $2
+          WHERE id = $3
+          RETURNING id, full_name, email, role, ${profileImageColumn}
+          `,
+          [resolvedFullName, resolvedProfileImageUrl, req.session.user.id]
+        )
+      : await pool.query(
+          `
+          UPDATE users
+          SET full_name = $1
+          WHERE id = $2
+          RETURNING id, full_name, email, role
+          `,
+          [resolvedFullName, req.session.user.id]
+        );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const sessionUser = buildSessionUser(result.rows[0], profileImageColumn);
+
+    if (!profileImageColumn) {
+      sessionUser.profileImageUrl = resolvedProfileImageUrl || null;
+    }
+
+    req.session.user = sessionUser;
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+});
+
+app.put("/api/auth/password", requireAuth, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters" });
+    }
+
+    const result = await pool.query(
+      "SELECT id FROM users WHERE id = $1",
+      [req.session.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      "UPDATE users SET password_hash = $1 WHERE id = $2",
+      [passwordHash, req.session.user.id]
+    );
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Password change logout error:", err);
+        return res.status(500).json({ message: "Password changed, but logout failed" });
+      }
+
+      res.clearCookie("connect.sid");
+      res.status(200).json({
+        message: "Password changed successfully. Please log in again."
+      });
+    });
+  } catch (error) {
+    console.error("Password update error:", error);
+    res.status(500).json({ message: "Failed to update password" });
+  }
+});
+
 /* ==================================================
    Dashboard Analytics Routes
    ================================================== */

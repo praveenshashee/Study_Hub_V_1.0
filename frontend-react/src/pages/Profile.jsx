@@ -1,7 +1,28 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../services/api";
+import CloudinaryUploadButton from "../components/CloudinaryUploadButton";
 import UserAvatar from "../components/UserAvatar";
 
-function Profile({ currentUser, authLoading }) {
+function Profile({ currentUser, authLoading, refreshCurrentUser, onSessionEnded }) {
+  const navigate = useNavigate();
+
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    profileImageUrl: ""
+  });
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileUploadMessage, setProfileUploadMessage] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordConfirmOpen, setPasswordConfirmOpen] = useState(false);
+
   const displayName = currentUser?.fullName || "Study Hub User";
   const initials = displayName
     .split(" ")
@@ -29,6 +50,103 @@ function Profile({ currentUser, authLoading }) {
       value: currentUser?.profileImageUrl ? "Custom image connected" : "Initials avatar"
     }
   ];
+
+  useEffect(() => {
+    if (!currentUser) {
+      return;
+    }
+
+    setProfileForm({
+      fullName: currentUser.fullName || "",
+      profileImageUrl: currentUser.profileImageUrl || ""
+    });
+  }, [currentUser]);
+
+  const handleProfileChange = (event) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value
+    }));
+  };
+
+  const handlePasswordChange = (event) => {
+    setPasswordForm((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value
+    }));
+  };
+
+  const handleProfileImageUploadSuccess = (uploadedImage) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      profileImageUrl: uploadedImage.secure_url || ""
+    }));
+    setProfileUploadMessage("Profile image uploaded successfully. Save your profile to apply it.");
+  };
+
+  const handleProfileSubmit = async (event) => {
+    event.preventDefault();
+    setProfileMessage("");
+    setProfileSaving(true);
+
+    try {
+      await api.put("/api/auth/profile", {
+        fullName: profileForm.fullName,
+        profileImageUrl: profileForm.profileImageUrl
+      });
+
+      await refreshCurrentUser?.();
+      setProfileMessage("Profile updated successfully");
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      setProfileMessage(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handlePasswordSubmit = (event) => {
+    event.preventDefault();
+    setPasswordMessage("");
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordMessage("New passwords do not match");
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordMessage("New password must be at least 6 characters");
+      return;
+    }
+
+    setPasswordConfirmOpen(true);
+  };
+
+  const confirmPasswordChange = async () => {
+    setPasswordSaving(true);
+    setPasswordMessage("");
+
+    try {
+      await api.put("/api/auth/password", {
+        newPassword: passwordForm.newPassword
+      });
+
+      onSessionEnded?.();
+      setPasswordConfirmOpen(false);
+      navigate("/login", {
+        replace: true,
+        state: {
+          message: "Password changed successfully. Please log in again."
+        }
+      });
+    } catch (err) {
+      console.error("Failed to update password:", err);
+      setPasswordMessage(err.response?.data?.message || "Failed to update password");
+      setPasswordConfirmOpen(false);
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -175,7 +293,148 @@ function Profile({ currentUser, authLoading }) {
             )}
           </div>
         </div>
+
+        <div className="profile-settings-card">
+          <div className="profile-section-heading">
+            <span>Settings</span>
+            <h2>Edit profile</h2>
+          </div>
+
+          <form className="profile-settings-form" onSubmit={handleProfileSubmit}>
+            <label htmlFor="profileFullName">Full name</label>
+            <input
+              id="profileFullName"
+              name="fullName"
+              type="text"
+              value={profileForm.fullName}
+              onChange={handleProfileChange}
+              required
+            />
+
+            <label>Profile image</label>
+            <div className="profile-upload-control">
+              <CloudinaryUploadButton
+                onUploadSuccess={handleProfileImageUploadSuccess}
+                buttonLabel="Upload Profile Image"
+                resourceType="image"
+                className="profile-upload-btn"
+              />
+              <input
+                id="profileImageUrl"
+                name="profileImageUrl"
+                type="url"
+                value={profileForm.profileImageUrl}
+                onChange={handleProfileChange}
+                placeholder="Uploaded image URL appears here"
+              />
+            </div>
+
+            {profileUploadMessage && (
+              <p className="success-text profile-settings-feedback">
+                {profileUploadMessage}
+              </p>
+            )}
+
+            {profileForm.profileImageUrl && (
+              <div className="profile-image-preview-card">
+                <span>Preview</span>
+                <img src={profileForm.profileImageUrl} alt="Profile preview" />
+              </div>
+            )}
+
+            <button type="submit" disabled={profileSaving}>
+              {profileSaving ? "Saving..." : "Save Profile"}
+            </button>
+          </form>
+
+          {profileMessage && (
+            <p
+              className={
+                profileMessage.toLowerCase().includes("success")
+                  ? "success-text profile-settings-feedback"
+                  : "error-text profile-settings-feedback"
+              }
+            >
+              {profileMessage}
+            </p>
+          )}
+        </div>
+
+        <div className="profile-security-card">
+          <div className="profile-section-heading">
+            <span>Security</span>
+            <h2>Change password</h2>
+          </div>
+
+          <div className="profile-security-warning">
+            <strong>Heads up</strong>
+            <p>Changing your password will log you out immediately.</p>
+          </div>
+
+          <form className="profile-settings-form" onSubmit={handlePasswordSubmit}>
+            <label htmlFor="newPassword">New password</label>
+            <input
+              id="newPassword"
+              name="newPassword"
+              type="password"
+              value={passwordForm.newPassword}
+              onChange={handlePasswordChange}
+              required
+              minLength={6}
+            />
+
+            <label htmlFor="confirmPassword">Confirm new password</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={passwordForm.confirmPassword}
+              onChange={handlePasswordChange}
+              required
+              minLength={6}
+            />
+
+            <button type="submit" disabled={passwordSaving}>
+              {passwordSaving ? "Changing..." : "Change Password"}
+            </button>
+          </form>
+
+          {passwordMessage && (
+            <p className="error-text profile-settings-feedback">
+              {passwordMessage}
+            </p>
+          )}
+        </div>
       </section>
+
+      {passwordConfirmOpen && (
+        <div className="logout-modal-backdrop" role="presentation">
+          <div className="logout-modal" role="dialog" aria-modal="true" aria-labelledby="password-confirm-title">
+            <span className="logout-modal-mark">SH</span>
+            <h2 id="password-confirm-title">Change password?</h2>
+            <p>Your password will update immediately, and you will be redirected to login.</p>
+
+            <div className="logout-modal-actions">
+              <button
+                type="button"
+                className="logout-modal-secondary"
+                onClick={() => setPasswordConfirmOpen(false)}
+                disabled={passwordSaving}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="logout-modal-primary"
+                onClick={confirmPasswordChange}
+                disabled={passwordSaving}
+              >
+                {passwordSaving ? "Changing..." : "Confirm Change"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -1536,7 +1536,9 @@ body {
 
 .profile-details-card,
 .profile-insight-card,
-.profile-shortcuts-card {
+.profile-shortcuts-card,
+.profile-settings-card,
+.profile-security-card {
   border-radius: 22px;
   padding: 24px;
   transition:
@@ -1547,7 +1549,9 @@ body {
 
 .profile-details-card:hover,
 .profile-insight-card:hover,
-.profile-shortcuts-card:hover {
+.profile-shortcuts-card:hover,
+.profile-settings-card:hover,
+.profile-security-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
   border-color: rgba(49, 91, 141, 0.24);
@@ -1555,6 +1559,142 @@ body {
 
 .profile-shortcuts-card {
   grid-column: 1 / -1;
+}
+
+.profile-settings-card,
+.profile-security-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+}
+
+.profile-settings-form {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-settings-form label {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.profile-settings-form input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-solid);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.profile-settings-form input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(49, 91, 141, 0.14);
+}
+
+.profile-settings-form button {
+  width: fit-content;
+  min-width: 160px;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 13px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.profile-settings-form button:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.profile-settings-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.profile-upload-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.profile-upload-btn {
+  min-width: 190px;
+  min-height: 46px;
+  padding: 11px 15px;
+  border: none;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.profile-upload-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.profile-image-preview-card {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.profile-image-preview-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.profile-image-preview-card img {
+  width: 118px;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--border);
+}
+
+.profile-settings-feedback {
+  margin: 14px 0 0;
+}
+
+.profile-security-warning {
+  margin-bottom: 16px;
+  padding: 15px;
+  border: 1px solid rgba(217, 119, 6, 0.28);
+  border-radius: 16px;
+  background: rgba(217, 119, 6, 0.09);
+}
+
+.profile-security-warning strong {
+  display: block;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.profile-security-warning p {
+  margin: 0;
+  color: var(--text-secondary);
 }
 
 .profile-section-heading {
@@ -1764,6 +1904,8 @@ body.dark-theme .profile-hero-card,
 body.dark-theme .profile-details-card,
 body.dark-theme .profile-insight-card,
 body.dark-theme .profile-shortcuts-card,
+body.dark-theme .profile-settings-card,
+body.dark-theme .profile-security-card,
 body.dark-theme .profile-empty-card,
 body.dark-theme .profile-loading-card {
   border-color: rgba(148, 163, 184, 0.22);
@@ -2622,6 +2764,8 @@ body.dark-theme .comment-alert-card {
   .profile-details-card,
   .profile-insight-card,
   .profile-shortcuts-card,
+  .profile-settings-card,
+  .profile-security-card,
   .profile-empty-card,
   .profile-loading-card {
     border-radius: 18px;
@@ -2632,6 +2776,18 @@ body.dark-theme .comment-alert-card {
   .profile-mini-stats,
   .profile-shortcut-list {
     grid-template-columns: 1fr;
+  }
+
+  .profile-settings-form button {
+    width: 100%;
+  }
+
+  .profile-upload-control {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-upload-btn {
+    width: 100%;
   }
 
   .profile-detail-item,

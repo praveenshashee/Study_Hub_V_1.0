@@ -122,7 +122,14 @@ function App() {
         <Route path="/signup" element={<Signup refreshCurrentUser={fetchCurrentUser} />} />
         <Route
           path="/profile"
-          element={<Profile currentUser={currentUser} authLoading={authLoading} />}
+          element={
+            <Profile
+              currentUser={currentUser}
+              authLoading={authLoading}
+              refreshCurrentUser={fetchCurrentUser}
+              onSessionEnded={() => setCurrentUser(null)}
+            />
+          }
         />
         <Route
           path="/dashboard"
